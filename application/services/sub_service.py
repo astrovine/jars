@@ -1,12 +1,3 @@
-"""
-Subscription Service
-
-Features:
-- Tier enforcement (max follows per tier)
-- Whale validator (minimum capital requirements)
-- Shadow balance (fund reservation)
-- Shadow mode (paper trading)
-"""
 import uuid
 from datetime import datetime, timezone
 from decimal import Decimal
@@ -238,9 +229,6 @@ class SubscriptionService:
         user_id: uuid.UUID,
         reason: Optional[str] = None
     ) -> Subscription:
-        """
-        Pause a subscription. They don't copy new trades
-        """
         result = await db.execute(
             select(Subscription).filter(
                 Subscription.sub_id == subscription_id,

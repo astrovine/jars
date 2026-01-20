@@ -71,7 +71,7 @@ class StandardFormatter(logging.Formatter):
             'INFO': '\033[32m',  # Green
             'WARNING': '\033[33m',  # Yellow
             'ERROR': '\033[31m',  # Red
-            'CRITICAL': '\033[35m',  # Magenta
+            'CRITICAL': '\033[35m',  # Magenta (cool name btw)
         }
         reset = '\033[0m'
 
