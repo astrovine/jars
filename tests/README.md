@@ -13,11 +13,11 @@ pytest tests/ -v
 pytest tests/ -v --cov=application --cov-report=html
 
 # run specific test file
-pytest tests/test_auth.py -v
+pytest tests/unit/test_auth.py -v
 
 # if you would like to run specific test class
-pytest tests/test_auth.py::TestUserRegistration -v
+pytest tests/unit/test_auth.py::TestUserRegistration -v
 
 # or just run a specific test
-pytest tests/test_auth.py::TestUserRegistration::test_register_free_user_success -v
+pytest tests/unit/test_auth.py::TestUserRegistration::test_register_free_user_success -v
 ```

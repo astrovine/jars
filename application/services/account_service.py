@@ -15,7 +15,7 @@ from ..utilities import audit, oauth2
 from ..schemas import account as at
 from ..schemas import ledger as ledger_schemas
 from application.models.enums import AccountType
-from application.tasks import task_send_verification_email, task_send_welcome_email
+from application.core.tasks import task_send_verification_email, task_send_welcome_email
 
 logger = audit.setup_logger(__name__)
 

@@ -5,7 +5,6 @@ from datetime import datetime, timezone, timedelta
 from decimal import Decimal
 from typing import AsyncGenerator, Generator
 from unittest.mock import AsyncMock, MagicMock, patch
-
 import pytest
 import pytest_asyncio
 from fastapi import FastAPI
@@ -14,7 +13,6 @@ from httpx import AsyncClient, ASGITransport
 from sqlalchemy import event, text
 from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine, async_sessionmaker
 from sqlalchemy.pool import NullPool
-
 from application.main import app
 from application.models.base import Base, get_db
 from application.models import account
@@ -131,7 +129,7 @@ async def system_accounts(db_session: AsyncSession):
 
 @pytest_asyncio.fixture
 async def test_user(db_session: AsyncSession):
-    hashed_password = oauth2.get_password_hash("MorningCoffee42!")
+    hashed_password = oauth2.get_password_hash("MorningCoffeeYeahhh42!")
     user = account.User(
         id=uuid.uuid4(),
         first_name="Test",

@@ -1,4 +1,3 @@
-# Python
 __pycache__/
 *.py[cod]
 *$py.class
@@ -21,8 +20,6 @@ share/python-wheels/
 .installed.cfg
 *.egg
 MANIFEST
-
-# Virtual Environment
 venv/
 env/
 ENV/
@@ -30,35 +27,25 @@ ENV/
 .venv
 env.bak/
 venv.bak/
-
-# Certificates and Keys
 *.pem
 *.key
 *.crt
 *.cer
 certs/
-
-# Next.js
 .next/
 out/
 build/
 dist/
-
-# Node modules
 node_modules/
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
 pnpm-debug.log*
 .pnpm-store
-
-# IDEs
 .idea/
 .vscode/
 *.swp
 *.swo
 .DS_Store
 Thumbs.db
-
-# Agent
-.gemini/
+*.log
