@@ -1,18 +1,353 @@
 "use client";
 
-import { useEffect } from "react";
-import { useRouter } from "next/navigation";
+import React, { useState, useEffect, Suspense } from "react";
+import Link from "next/link";
+import { useRouter, useSearchParams } from "next/navigation";
+import { useLogin, useVerify2FA, useResendVerification } from "@/hooks/use-queries";
+import { motion, AnimatePresence } from "framer-motion";
+import { cn } from "@/lib/utils";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Eye, EyeOff, Shield, ArrowLeft, CheckCircle, AlertCircle, Key } from "lucide-react";
 
-export default function LoginPage() {
+// OAuth Icons
+const GoogleIcon = () => (
+  <svg width="20" height="20" viewBox="0 0 24 24">
+    <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" />
+    <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" />
+    <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" />
+    <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" />
+  </svg>
+);
+
+const MicrosoftIcon = () => (
+  <svg width="20" height="20" viewBox="0 0 23 23">
+    <rect x="1" y="1" width="10" height="10" fill="#F25022" />
+    <rect x="12" y="1" width="10" height="10" fill="#7FBA00" />
+    <rect x="1" y="12" width="10" height="10" fill="#00A4EF" />
+    <rect x="12" y="12" width="10" height="10" fill="#FFB900" />
+  </svg>
+);
+
+function LoginPageContent() {
   const router = useRouter();
+  const searchParams = useSearchParams();
+
+  const [formData, setFormData] = useState({ email: "", password: "" });
+  const [showPassword, setShowPassword] = useState(false);
+  const [rememberMe, setRememberMe] = useState(true);
+  const [twoFactorCode, setTwoFactorCode] = useState("");
+  const [show2FA, setShow2FA] = useState(false);
+  const [preAuthToken, setPreAuthToken] = useState<string | null>(null);
+  const [error, setError] = useState<string | null>(null);
+  const [successMessage, setSuccessMessage] = useState<string | null>(null);
 
   useEffect(() => {
-    router.replace("/waitlist");
-  }, [router]);
+    if (searchParams.get("registered") === "true") {
+      setSuccessMessage("Account created. Please verify your email.");
+    }
+    if (searchParams.get("verified") === "true") {
+      setSuccessMessage("Email verified successfully!");
+    }
+    if (searchParams.get("session_expired") === "true") {
+      setError("Session expired. Please sign in again.");
+    }
+    if (searchParams.get("password_reset") === "true") {
+      setSuccessMessage("Password reset successfully.");
+    }
+  }, [searchParams]);
+
+  const { mutate: login, isPending: isLoggingIn } = useLogin({
+    onSuccess: (data) => {
+      if (data.require_2fa && data.pre_auth_token) {
+        setPreAuthToken(data.pre_auth_token);
+        setShow2FA(true);
+        setError(null);
+      } else {
+        router.push("/dashboard");
+      }
+    },
+    onError: (error) => setError(error.message),
+  });
+
+  const { mutate: verify2FA, isPending: isVerifying } = useVerify2FA({
+    onSuccess: () => router.push("/dashboard"),
+    onError: (error) => setError(error.message),
+  });
+
+  const { mutate: resendVerification, isPending: isResending } = useResendVerification({
+    onSuccess: () => {
+      setSuccessMessage("Verification email sent.");
+      setError(null);
+    },
+    onError: (error) => setError(error.message),
+  });
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    setError(null);
+    setSuccessMessage(null);
+
+    if (show2FA) {
+      verify2FA({ preAuthToken: preAuthToken!, code: twoFactorCode });
+    } else {
+      login({ email: formData.email, password: formData.password });
+    }
+  };
+
+  const isEmailNotVerified = error?.toLowerCase().includes("email") && error?.toLowerCase().includes("verif");
 
   return (
-    <div className="min-h-screen bg-black flex items-center justify-center">
-      <p className="text-neutral-400">Redirecting...</p>
+    <div className="relative min-h-screen w-full bg-black flex items-center justify-center p-4">
+      {/* Grid Background */}
+      <div
+        className={cn(
+          "absolute inset-0",
+          "[background-size:40px_40px]",
+          "[background-image:linear-gradient(to_right,#262626_1px,transparent_1px),linear-gradient(to_bottom,#262626_1px,transparent_1px)]"
+        )}
+      />
+      {/* Radial gradient for faded look */}
+      <div className="pointer-events-none absolute inset-0 bg-black [mask-image:radial-gradient(ellipse_at_center,transparent_20%,black)]" />
+
+      <AnimatePresence mode="wait">
+        {!show2FA ? (
+          <motion.div
+            key="login"
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -10 }}
+            className="relative z-10 w-full max-w-md"
+          >
+            {/* Card */}
+            <div className="bg-[#191919] rounded-xl border border-[#333] p-6 shadow-2xl">
+              {/* Logo */}
+              <div className="flex items-center justify-center mb-5">
+                <Link href="/" className="text-xl font-bold text-white">
+                  jars_
+                </Link>
+              </div>
+
+              {/* Header */}
+              <h1 className="text-lg font-medium text-white text-center mb-5">
+                Sign in to your account
+              </h1>
+
+              {/* Messages */}
+              {successMessage && (
+                <div className="mb-4 p-3 bg-emerald-500/10 border border-emerald-500/20 rounded-md flex items-center gap-2 text-sm text-emerald-400">
+                  <CheckCircle className="w-4 h-4 flex-shrink-0" />
+                  {successMessage}
+                </div>
+              )}
+
+              {error && (
+                <div className="mb-4 p-3 bg-red-500/10 border border-red-500/20 rounded-md">
+                  <div className="flex items-start gap-2 text-sm text-red-400">
+                    <AlertCircle className="w-4 h-4 flex-shrink-0 mt-0.5" />
+                    <div>
+                      {error}
+                      {isEmailNotVerified && formData.email && (
+                        <button
+                          onClick={() => resendVerification(formData.email)}
+                          disabled={isResending}
+                          className="block mt-1 text-emerald-400 hover:underline disabled:opacity-50"
+                        >
+                          {isResending ? "Sending..." : "Resend verification"}
+                        </button>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {/* OAuth Buttons */}
+              <div className="space-y-2 mb-5">
+                <button
+                  type="button"
+                  className="w-full h-9 rounded-md bg-[#252525] border border-[#404040] text-white text-sm flex items-center justify-center gap-2 hover:bg-[#303030] transition-colors"
+                >
+                  <GoogleIcon />
+                  Sign in with Google
+                </button>
+                <button
+                  type="button"
+                  className="w-full h-9 rounded-md bg-[#252525] border border-[#404040] text-white text-sm flex items-center justify-center gap-2 hover:bg-[#303030] transition-colors"
+                >
+                  <MicrosoftIcon />
+                  Sign in with Microsoft
+                </button>
+                <button
+                  type="button"
+                  className="w-full h-9 rounded-md bg-[#252525] border border-[#404040] text-white text-sm flex items-center justify-center gap-2 hover:bg-[#303030] transition-colors"
+                >
+                  <Key className="w-4 h-4" />
+                  Sign in with Passkey
+                </button>
+              </div>
+
+              {/* Divider */}
+              <div className="relative my-5">
+                <div className="absolute inset-0 flex items-center">
+                  <div className="w-full border-t border-[#404040]" />
+                </div>
+                <div className="relative flex justify-center">
+                  <span className="px-3 bg-[#191919] text-xs text-[#888]">
+                    or continue with email
+                  </span>
+                </div>
+              </div>
+
+              {/* Form */}
+              <form onSubmit={handleSubmit} className="space-y-3">
+                <div>
+                  <label className="block text-xs text-[#888] mb-1">Email</label>
+                  <Input
+                    type="email"
+                    required
+                    value={formData.email}
+                    onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                    className="h-9 bg-[#252525] border-[#404040] text-white text-sm"
+                  />
+                </div>
+
+                <div>
+                  <div className="flex items-center justify-between mb-1">
+                    <label className="text-xs text-[#888]">Password</label>
+                    <Link href="/forgot-password" className="text-xs text-emerald-500 hover:text-emerald-400">
+                      Forgot password?
+                    </Link>
+                  </div>
+                  <div className="relative">
+                    <Input
+                      type={showPassword ? "text" : "password"}
+                      required
+                      value={formData.password}
+                      onChange={(e) => setFormData({ ...formData, password: e.target.value })}
+                      className="h-9 bg-[#252525] border-[#404040] text-white text-sm pr-9"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setShowPassword(!showPassword)}
+                      className="absolute right-2 top-1/2 -translate-y-1/2 text-[#666] hover:text-white"
+                    >
+                      {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                    </button>
+                  </div>
+                </div>
+
+                {/* Remember Me */}
+                <label className="flex items-center gap-2 cursor-pointer">
+                  <div
+                    className={`w-4 h-4 rounded flex items-center justify-center transition-colors ${rememberMe ? 'bg-emerald-600' : 'bg-[#252525] border border-[#404040]'
+                      }`}
+                    onClick={() => setRememberMe(!rememberMe)}
+                  >
+                    {rememberMe && (
+                      <svg className="w-2.5 h-2.5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+                      </svg>
+                    )}
+                  </div>
+                  <span className="text-xs text-[#888]">Remember me</span>
+                </label>
+
+                <Button
+                  type="submit"
+                  disabled={isLoggingIn}
+                  className="w-full h-9 bg-emerald-600 hover:bg-emerald-700 text-white font-medium"
+                >
+                  {isLoggingIn ? "Signing in..." : "Sign in"}
+                </Button>
+              </form>
+
+              {/* Sign Up Link */}
+              <p className="text-center text-xs text-[#888] mt-4">
+                New to Jars?{" "}
+                <Link href="/register" className="text-emerald-500 hover:text-emerald-400">
+                  Create account
+                </Link>
+              </p>
+            </div>
+          </motion.div>
+        ) : (
+          <motion.div
+            key="2fa"
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -10 }}
+            className="relative z-10 w-full max-w-md"
+          >
+            {/* 2FA Card */}
+            <div className="bg-[#191919] rounded-xl border border-[#333] p-6 shadow-2xl text-center">
+              <div className="w-12 h-12 rounded-full bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center mx-auto mb-5">
+                <Shield className="w-5 h-5 text-emerald-400" />
+              </div>
+              <h1 className="text-lg font-medium text-white mb-2">
+                Two-factor authentication
+              </h1>
+              <p className="text-sm text-[#888] mb-5">
+                Enter the 6-digit code from your authenticator app
+              </p>
+
+              {error && (
+                <div className="mb-4 p-3 bg-red-500/10 border border-red-500/20 rounded-md flex items-center gap-2 text-sm text-red-400">
+                  <AlertCircle className="w-4 h-4 flex-shrink-0" />
+                  {error}
+                </div>
+              )}
+
+              <form onSubmit={handleSubmit}>
+                <Input
+                  type="text"
+                  placeholder="000000"
+                  value={twoFactorCode}
+                  onChange={(e) => setTwoFactorCode(e.target.value.replace(/\D/g, "").slice(0, 6))}
+                  className="h-11 mb-4 bg-[#252525] border-[#404040] text-center font-mono text-xl tracking-[0.4em] text-white"
+                  maxLength={6}
+                  required
+                  autoComplete="one-time-code"
+                  autoFocus
+                />
+
+                <Button
+                  type="submit"
+                  disabled={isVerifying || twoFactorCode.length !== 6}
+                  className="w-full h-9 bg-emerald-600 hover:bg-emerald-700 text-white font-medium"
+                >
+                  {isVerifying ? "Verifying..." : "Verify"}
+                </Button>
+              </form>
+
+              <button
+                type="button"
+                onClick={() => {
+                  setShow2FA(false);
+                  setPreAuthToken(null);
+                  setTwoFactorCode("");
+                  setError(null);
+                }}
+                className="mt-4 text-xs text-[#666] hover:text-[#888] flex items-center justify-center gap-1 mx-auto"
+              >
+                <ArrowLeft className="w-3 h-3" />
+                Back to sign in
+              </button>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
+  );
+}
+
+export default function LoginPage() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen bg-black flex items-center justify-center">
+        <div className="w-6 h-6 border-2 border-[#333] border-t-emerald-500 rounded-full animate-spin" />
+      </div>
+    }>
+      <LoginPageContent />
+    </Suspense>
   );
 }

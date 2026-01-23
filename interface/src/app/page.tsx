@@ -120,7 +120,7 @@ function RotatingWords({
           exit={{ opacity: 0, y: -20, filter: "blur(8px)" }}
           transition={{
             duration: 0.6,
-            ease: [0.25, 0.46, 0.45, 0.94] // Apple-style ease-out
+            ease: [0.25, 0.46, 0.45, 0.94]
           }}
           className="inline-block"
         >
@@ -639,42 +639,149 @@ function DashboardPreview() {
                   </div>
                 </div>
 
-                {/* Chart SVG */}
+                {/* Chart SVG - Professional Candlestick Chart */}
                 <svg className="absolute inset-0 w-full h-full" viewBox="0 0 800 350" preserveAspectRatio="none">
                   <defs>
-                    <linearGradient id="chartFill2" x1="0%" y1="0%" x2="0%" y2="100%">
-                      <stop offset="0%" stopColor="#10B981" stopOpacity="0.15" />
-                      <stop offset="100%" stopColor="#10B981" stopOpacity="0" />
+                    {/* Gradients for indicators */}
+                    <linearGradient id="bollingerFill" x1="0%" y1="0%" x2="0%" y2="100%">
+                      <stop offset="0%" stopColor="#6366f1" stopOpacity="0.08" />
+                      <stop offset="100%" stopColor="#6366f1" stopOpacity="0.02" />
                     </linearGradient>
-                    <linearGradient id="chartLine2" x1="0%" y1="0%" x2="100%" y2="0%">
-                      <stop offset="0%" stopColor="#10B981" stopOpacity="0.4" />
-                      <stop offset="50%" stopColor="#10B981" stopOpacity="1" />
-                      <stop offset="100%" stopColor="#10B981" stopOpacity="1" />
+                    <linearGradient id="volGreen" x1="0%" y1="100%" x2="0%" y2="0%">
+                      <stop offset="0%" stopColor="#10B981" stopOpacity="0.8" />
+                      <stop offset="100%" stopColor="#10B981" stopOpacity="0.3" />
+                    </linearGradient>
+                    <linearGradient id="volRed" x1="0%" y1="100%" x2="0%" y2="0%">
+                      <stop offset="0%" stopColor="#ef4444" stopOpacity="0.8" />
+                      <stop offset="100%" stopColor="#ef4444" stopOpacity="0.3" />
                     </linearGradient>
                   </defs>
-                  {/* Grid lines */}
-                  {[0, 1, 2, 3, 4].map((i) => (
-                    <line key={i} x1="0" y1={70 * i + 35} x2="800" y2={70 * i + 35} stroke="#1a1a1a" strokeWidth="1" />
-                  ))}
-                  {/* Chart path */}
-                  <path
-                    d="M0,280 C40,275 60,260 100,250 C160,235 200,245 260,220 C320,195 360,210 420,170 C480,130 520,150 580,100 C640,50 700,80 800,40 L800,350 L0,350 Z"
-                    fill="url(#chartFill2)"
-                  />
-                  <path
-                    d="M0,280 C40,275 60,260 100,250 C160,235 200,245 260,220 C320,195 360,210 420,170 C480,130 520,150 580,100 C640,50 700,80 800,40"
-                    fill="none"
-                    stroke="url(#chartLine2)"
-                    strokeWidth="2"
-                  />
+
+                  {/* Background Grid - 5% opacity, subtle */}
+                  <g opacity="0.05">
+                    {/* Horizontal grid lines */}
+                    {[0, 1, 2, 3, 4, 5, 6, 7, 8].map((i) => (
+                      <line key={`h${i}`} x1="0" y1={35 + i * 30} x2="800" y2={35 + i * 30} stroke="#fff" strokeWidth="1" />
+                    ))}
+                    {/* Vertical grid lines */}
+                    {[0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15].map((i) => (
+                      <line key={`v${i}`} x1={50 * i} y1="0" x2={50 * i} y2="280" stroke="#fff" strokeWidth="1" />
+                    ))}
+                  </g>
+
+                  {/* Support Zone - faint translucent rectangle */}
+                  <rect x="0" y="200" width="800" height="30" fill="#10B981" opacity="0.06" />
+                  <line x1="0" y1="215" x2="800" y2="215" stroke="#10B981" strokeWidth="1" strokeDasharray="3,3" opacity="0.3" />
+
+                  {/* Resistance Zone - faint translucent rectangle */}
+                  <rect x="0" y="60" width="800" height="25" fill="#ef4444" opacity="0.06" />
+                  <line x1="0" y1="72" x2="800" y2="72" stroke="#ef4444" strokeWidth="1" strokeDasharray="3,3" opacity="0.3" />
+
+                  {/* Bollinger Bands - thin lines with fill */}
+                  <path d="M0,180 Q100,195 200,175 T400,140 T600,85 T800,55" fill="none" stroke="#6366f1" strokeWidth="0.5" opacity="0.4" />
+                  <path d="M0,230 Q100,240 200,225 T400,195 T600,130 T800,95" fill="none" stroke="#6366f1" strokeWidth="0.5" opacity="0.4" />
+                  <path d="M0,230 Q100,240 200,225 T400,195 T600,130 T800,95 L800,55 Q600,85 400,140 T200,175 T0,180 Z" fill="url(#bollingerFill)" />
+
+                  {/* 200-day Moving Average - smooth orange line */}
+                  <path d="M0,210 Q100,205 200,195 T400,165 T600,108 T800,75" fill="none" stroke="#f59e0b" strokeWidth="1.5" opacity="0.7" />
+
+                  {/* Candlesticks - OHLC data with realistic patterns */}
+                  {/* Candle 1 - Red */}
+                  <line x1="40" y1="195" x2="40" y2="225" stroke="#ef4444" strokeWidth="1" />
+                  <rect x="35" y="200" width="10" height="15" fill="#ef4444" />
+                  {/* Candle 2 - Green */}
+                  <line x1="80" y1="188" x2="80" y2="218" stroke="#10B981" strokeWidth="1" />
+                  <rect x="75" y="193" width="10" height="18" fill="#10B981" />
+                  {/* Candle 3 - Red */}
+                  <line x1="120" y1="175" x2="120" y2="210" stroke="#ef4444" strokeWidth="1" />
+                  <rect x="115" y="182" width="10" height="20" fill="#ef4444" />
+                  {/* Candle 4 - Green */}
+                  <line x1="160" y1="165" x2="160" y2="200" stroke="#10B981" strokeWidth="1" />
+                  <rect x="155" y="170" width="10" height="22" fill="#10B981" />
+                  {/* Candle 5 - Green */}
+                  <line x1="200" y1="155" x2="200" y2="188" stroke="#10B981" strokeWidth="1" />
+                  <rect x="195" y="160" width="10" height="20" fill="#10B981" />
+                  {/* Candle 6 - Red */}
+                  <line x1="240" y1="148" x2="240" y2="178" stroke="#ef4444" strokeWidth="1" />
+                  <rect x="235" y="152" width="10" height="18" fill="#ef4444" />
+                  {/* Candle 7 - Green */}
+                  <line x1="280" y1="140" x2="280" y2="172" stroke="#10B981" strokeWidth="1" />
+                  <rect x="275" y="145" width="10" height="20" fill="#10B981" />
+                  {/* Candle 8 - Green */}
+                  <line x1="320" y1="125" x2="320" y2="162" stroke="#10B981" strokeWidth="1" />
+                  <rect x="315" y="130" width="10" height="25" fill="#10B981" />
+                  {/* Candle 9 - Red */}
+                  <line x1="360" y1="118" x2="360" y2="150" stroke="#ef4444" strokeWidth="1" />
+                  <rect x="355" y="122" width="10" height="20" fill="#ef4444" />
+                  {/* Candle 10 - Green */}
+                  <line x1="400" y1="105" x2="400" y2="145" stroke="#10B981" strokeWidth="1" />
+                  <rect x="395" y="110" width="10" height="28" fill="#10B981" />
+                  {/* Candle 11 - Green */}
+                  <line x1="440" y1="92" x2="440" y2="128" stroke="#10B981" strokeWidth="1" />
+                  <rect x="435" y="96" width="10" height="25" fill="#10B981" />
+                  {/* Candle 12 - Red */}
+                  <line x1="480" y1="85" x2="480" y2="120" stroke="#ef4444" strokeWidth="1" />
+                  <rect x="475" y="90" width="10" height="22" fill="#ef4444" />
+                  {/* Candle 13 - Green */}
+                  <line x1="520" y1="75" x2="520" y2="112" stroke="#10B981" strokeWidth="1" />
+                  <rect x="515" y="80" width="10" height="25" fill="#10B981" />
+                  {/* Candle 14 - Green - Entry candle */}
+                  <line x1="560" y1="62" x2="560" y2="98" stroke="#10B981" strokeWidth="1" />
+                  <rect x="555" y="65" width="10" height="28" fill="#10B981" />
+                  {/* Candle 15 - Green */}
+                  <line x1="600" y1="55" x2="600" y2="88" stroke="#10B981" strokeWidth="1" />
+                  <rect x="595" y="58" width="10" height="25" fill="#10B981" />
+                  {/* Candle 16 - Red */}
+                  <line x1="640" y1="48" x2="640" y2="80" stroke="#ef4444" strokeWidth="1" />
+                  <rect x="635" y="52" width="10" height="20" fill="#ef4444" />
+                  {/* Candle 17 - Green */}
+                  <line x1="680" y1="42" x2="680" y2="72" stroke="#10B981" strokeWidth="1" />
+                  <rect x="675" y="45" width="10" height="22" fill="#10B981" />
+                  {/* Candle 18 - Current - Green */}
+                  <line x1="720" y1="35" x2="720" y2="65" stroke="#10B981" strokeWidth="1" />
+                  <rect x="715" y="38" width="10" height="22" fill="#10B981" />
+
+                  {/* Volume Histogram at bottom */}
+                  <g transform="translate(0, 285)">
+                    <rect x="35" y="0" width="10" height="25" fill="url(#volRed)" />
+                    <rect x="75" y="0" width="10" height="35" fill="url(#volGreen)" />
+                    <rect x="115" y="0" width="10" height="20" fill="url(#volRed)" />
+                    <rect x="155" y="0" width="10" height="42" fill="url(#volGreen)" />
+                    <rect x="195" y="0" width="10" height="38" fill="url(#volGreen)" />
+                    <rect x="235" y="0" width="10" height="15" fill="url(#volRed)" />
+                    <rect x="275" y="0" width="10" height="32" fill="url(#volGreen)" />
+                    <rect x="315" y="0" width="10" height="48" fill="url(#volGreen)" />
+                    <rect x="355" y="0" width="10" height="18" fill="url(#volRed)" />
+                    <rect x="395" y="0" width="10" height="55" fill="url(#volGreen)" />
+                    <rect x="435" y="0" width="10" height="45" fill="url(#volGreen)" />
+                    <rect x="475" y="0" width="10" height="22" fill="url(#volRed)" />
+                    <rect x="515" y="0" width="10" height="50" fill="url(#volGreen)" />
+                    <rect x="555" y="0" width="10" height="60" fill="url(#volGreen)" />
+                    <rect x="595" y="0" width="10" height="42" fill="url(#volGreen)" />
+                    <rect x="635" y="0" width="10" height="28" fill="url(#volRed)" />
+                    <rect x="675" y="0" width="10" height="38" fill="url(#volGreen)" />
+                    <rect x="715" y="0" width="10" height="52" fill="url(#volGreen)" />
+                  </g>
+
+                  {/* Current Price Crosshair */}
+                  <line x1="0" y1="45" x2="800" y2="45" stroke="#10B981" strokeWidth="1" strokeDasharray="2,2" opacity="0.6" />
+                  <line x1="720" y1="0" x2="720" y2="280" stroke="#10B981" strokeWidth="1" strokeDasharray="2,2" opacity="0.3" />
+
+                  {/* Price labels on Y-axis */}
+                  <g fontFamily="Roboto Mono, monospace" fontSize="8" fill="#666">
+                    <text x="755" y="50" textAnchor="start">73,200.00</text>
+                    <text x="755" y="95" textAnchor="start">72,800.00</text>
+                    <text x="755" y="140" textAnchor="start">72,400.00</text>
+                    <text x="755" y="185" textAnchor="start">72,000.00</text>
+                    <text x="755" y="230" textAnchor="start">71,600.00</text>
+                  </g>
+
                   {/* Entry point marker */}
-                  <circle cx="580" cy="100" r="4" fill="#10B981" />
-                  <circle cx="580" cy="100" r="8" fill="#10B981" opacity="0.3">
+                  <circle cx="560" cy="65" r="4" fill="#10B981" />
+                  <circle cx="560" cy="65" r="8" fill="#10B981" opacity="0.3">
                     <animate attributeName="r" values="8;14;8" dur="2s" repeatCount="indefinite" />
                     <animate attributeName="opacity" values="0.3;0;0.3" dur="2s" repeatCount="indefinite" />
                   </circle>
-                  {/* Current price line */}
-                  <line x1="0" y1="40" x2="800" y2="40" stroke="#10B981" strokeWidth="1" strokeDasharray="4,4" opacity="0.5" />
                 </svg>
 
                 {/* Entry Annotation */}
@@ -947,52 +1054,139 @@ function DashboardPreviewContent() {
             </div>
 
             {/* Mini Stats Row - Hidden on mobile */}
-            <div className="absolute top-4 right-4 z-10 hidden sm:flex items-center gap-4">
+            <div className="absolute top-3 right-3 z-20 hidden sm:flex items-center gap-6 px-3 py-2 rounded-md bg-[#0a0a0a]/90 backdrop-blur-sm border border-white/5" style={{ whiteSpace: 'nowrap' }}>
               <div className="text-right">
-                <div className="text-[9px] font-mono text-white/30">HIGH</div>
-                <div className="text-[11px] font-mono text-white/60">73,120.00</div>
+                <div className="text-[9px] font-mono text-white/40 whitespace-nowrap">HIGH</div>
+                <div className="text-[11px] font-mono text-emerald-400 whitespace-nowrap">73,120.00</div>
               </div>
               <div className="text-right">
-                <div className="text-[9px] font-mono text-white/30">LOW</div>
-                <div className="text-[11px] font-mono text-white/60">71,240.50</div>
+                <div className="text-[9px] font-mono text-white/40 whitespace-nowrap">LOW</div>
+                <div className="text-[11px] font-mono text-red-400 whitespace-nowrap">71,240.50</div>
               </div>
               <div className="text-right">
-                <div className="text-[9px] font-mono text-white/30">VOL</div>
-                <div className="text-[11px] font-mono text-white/60">$2.84B</div>
+                <div className="text-[9px] font-mono text-white/40 whitespace-nowrap">VOL</div>
+                <div className="text-[11px] font-mono text-white/60 whitespace-nowrap">$2.84B</div>
               </div>
             </div>
 
-            {/* Chart SVG */}
+            {/* Chart SVG - Professional Candlestick Chart */}
             <svg className="absolute inset-0 w-full h-full" viewBox="0 0 800 250" preserveAspectRatio="none">
               <defs>
-                <linearGradient id="scrollChartFill" x1="0%" y1="0%" x2="0%" y2="100%">
-                  <stop offset="0%" stopColor="#10B981" stopOpacity="0.15" />
-                  <stop offset="100%" stopColor="#10B981" stopOpacity="0" />
+                <linearGradient id="bollingerFillScroll" x1="0%" y1="0%" x2="0%" y2="100%">
+                  <stop offset="0%" stopColor="#6366f1" stopOpacity="0.08" />
+                  <stop offset="100%" stopColor="#6366f1" stopOpacity="0.02" />
                 </linearGradient>
-                <linearGradient id="scrollChartLine" x1="0%" y1="0%" x2="100%" y2="0%">
-                  <stop offset="0%" stopColor="#10B981" stopOpacity="0.4" />
-                  <stop offset="50%" stopColor="#10B981" stopOpacity="1" />
-                  <stop offset="100%" stopColor="#10B981" stopOpacity="1" />
+                <linearGradient id="volGreenScroll" x1="0%" y1="100%" x2="0%" y2="0%">
+                  <stop offset="0%" stopColor="#10B981" stopOpacity="0.8" />
+                  <stop offset="100%" stopColor="#10B981" stopOpacity="0.3" />
+                </linearGradient>
+                <linearGradient id="volRedScroll" x1="0%" y1="100%" x2="0%" y2="0%">
+                  <stop offset="0%" stopColor="#ef4444" stopOpacity="0.8" />
+                  <stop offset="100%" stopColor="#ef4444" stopOpacity="0.3" />
                 </linearGradient>
               </defs>
-              {/* Grid lines */}
-              {[0, 1, 2, 3].map((i) => (
-                <line key={i} x1="0" y1={60 * i + 30} x2="800" y2={60 * i + 30} stroke="#1a1a1a" strokeWidth="1" />
-              ))}
-              {/* Chart path */}
-              <path
-                d="M0,200 C40,195 60,180 100,170 C160,155 200,165 260,140 C320,115 360,130 420,90 C480,50 520,70 580,30 C640,10 700,25 800,15 L800,250 L0,250 Z"
-                fill="url(#scrollChartFill)"
-              />
-              <path
-                d="M0,200 C40,195 60,180 100,170 C160,155 200,165 260,140 C320,115 360,130 420,90 C480,50 520,70 580,30 C640,10 700,25 800,15"
-                fill="none"
-                stroke="url(#scrollChartLine)"
-                strokeWidth="2"
-              />
+
+              {/* Background Grid - 5% opacity */}
+              <g opacity="0.05">
+                {[0, 1, 2, 3, 4, 5, 6].map((i) => (
+                  <line key={`h${i}`} x1="0" y1={30 + i * 30} x2="800" y2={30 + i * 30} stroke="#fff" strokeWidth="1" />
+                ))}
+                {[0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15].map((i) => (
+                  <line key={`v${i}`} x1={50 * i} y1="0" x2={50 * i} y2="210" stroke="#fff" strokeWidth="1" />
+                ))}
+              </g>
+
+              {/* Support Zone */}
+              <rect x="0" y="150" width="800" height="25" fill="#10B981" opacity="0.06" />
+              <line x1="0" y1="162" x2="800" y2="162" stroke="#10B981" strokeWidth="1" strokeDasharray="3,3" opacity="0.3" />
+
+              {/* Resistance Zone */}
+              <rect x="0" y="40" width="800" height="20" fill="#ef4444" opacity="0.06" />
+              <line x1="0" y1="50" x2="800" y2="50" stroke="#ef4444" strokeWidth="1" strokeDasharray="3,3" opacity="0.3" />
+
+              {/* Bollinger Bands */}
+              <path d="M0,130 Q100,145 200,125 T400,90 T600,50 T800,30" fill="none" stroke="#6366f1" strokeWidth="0.5" opacity="0.4" />
+              <path d="M0,175 Q100,185 200,165 T400,135 T600,85 T800,60" fill="none" stroke="#6366f1" strokeWidth="0.5" opacity="0.4" />
+              <path d="M0,175 Q100,185 200,165 T400,135 T600,85 T800,60 L800,30 Q600,50 400,90 T200,125 T0,130 Z" fill="url(#bollingerFillScroll)" />
+
+              {/* 200-day Moving Average */}
+              <path d="M0,155 Q100,150 200,140 T400,110 T600,65 T800,45" fill="none" stroke="#f59e0b" strokeWidth="1.5" opacity="0.7" />
+
+              {/* Candlesticks */}
+              <line x1="40" y1="145" x2="40" y2="170" stroke="#ef4444" strokeWidth="1" />
+              <rect x="36" y="150" width="8" height="12" fill="#ef4444" />
+
+              <line x1="80" y1="138" x2="80" y2="165" stroke="#10B981" strokeWidth="1" />
+              <rect x="76" y="142" width="8" height="15" fill="#10B981" />
+
+              <line x1="120" y1="128" x2="120" y2="158" stroke="#ef4444" strokeWidth="1" />
+              <rect x="116" y="133" width="8" height="17" fill="#ef4444" />
+
+              <line x1="160" y1="118" x2="160" y2="150" stroke="#10B981" strokeWidth="1" />
+              <rect x="156" y="122" width="8" height="20" fill="#10B981" />
+
+              <line x1="200" y1="108" x2="200" y2="140" stroke="#10B981" strokeWidth="1" />
+              <rect x="196" y="112" width="8" height="20" fill="#10B981" />
+
+              <line x1="240" y1="100" x2="240" y2="128" stroke="#ef4444" strokeWidth="1" />
+              <rect x="236" y="104" width="8" height="16" fill="#ef4444" />
+
+              <line x1="280" y1="92" x2="280" y2="122" stroke="#10B981" strokeWidth="1" />
+              <rect x="276" y="96" width="8" height="18" fill="#10B981" />
+
+              <line x1="320" y1="80" x2="320" y2="115" stroke="#10B981" strokeWidth="1" />
+              <rect x="316" y="84" width="8" height="24" fill="#10B981" />
+
+              <line x1="360" y1="72" x2="360" y2="102" stroke="#ef4444" strokeWidth="1" />
+              <rect x="356" y="76" width="8" height="18" fill="#ef4444" />
+
+              <line x1="400" y1="62" x2="400" y2="98" stroke="#10B981" strokeWidth="1" />
+              <rect x="396" y="66" width="8" height="25" fill="#10B981" />
+
+              <line x1="440" y1="52" x2="440" y2="85" stroke="#10B981" strokeWidth="1" />
+              <rect x="436" y="55" width="8" height="23" fill="#10B981" />
+
+              <line x1="480" y1="45" x2="480" y2="78" stroke="#ef4444" strokeWidth="1" />
+              <rect x="476" y="50" width="8" height="20" fill="#ef4444" />
+
+              <line x1="520" y1="38" x2="520" y2="72" stroke="#10B981" strokeWidth="1" />
+              <rect x="516" y="42" width="8" height="23" fill="#10B981" />
+
+              {/* Entry candle */}
+              <line x1="560" y1="28" x2="560" y2="60" stroke="#10B981" strokeWidth="1" />
+              <rect x="556" y="32" width="8" height="22" fill="#10B981" />
+
+              <line x1="600" y1="22" x2="600" y2="52" stroke="#10B981" strokeWidth="1" />
+              <rect x="596" y="25" width="8" height="20" fill="#10B981" />
+
+              <line x1="640" y1="18" x2="640" y2="48" stroke="#ef4444" strokeWidth="1" />
+              <rect x="636" y="22" width="8" height="18" fill="#ef4444" />
+
+              <line x1="680" y1="14" x2="680" y2="42" stroke="#10B981" strokeWidth="1" />
+              <rect x="676" y="17" width="8" height="20" fill="#10B981" />
+
+              {/* Current candle */}
+              <line x1="720" y1="10" x2="720" y2="38" stroke="#10B981" strokeWidth="1" />
+              <rect x="716" y="13" width="8" height="20" fill="#10B981" />
+
+
+
+              {/* Current Price Crosshair */}
+              <line x1="0" y1="18" x2="800" y2="18" stroke="#10B981" strokeWidth="1" strokeDasharray="2,2" opacity="0.6" />
+              <line x1="720" y1="0" x2="720" y2="210" stroke="#10B981" strokeWidth="1" strokeDasharray="2,2" opacity="0.3" />
+
+              {/* Price labels on Y-axis */}
+              <g fontFamily="Roboto Mono, monospace" fontSize="7" fill="#666">
+                <text x="760" y="22" textAnchor="start">73,200.00</text>
+                <text x="760" y="62" textAnchor="start">72,800.00</text>
+                <text x="760" y="102" textAnchor="start">72,400.00</text>
+                <text x="760" y="142" textAnchor="start">72,000.00</text>
+                <text x="760" y="182" textAnchor="start">71,600.00</text>
+              </g>
+
               {/* Entry point marker */}
-              <circle cx="580" cy="30" r="4" fill="#10B981" />
-              <circle cx="580" cy="30" r="8" fill="#10B981" opacity="0.3">
+              <circle cx="560" cy="32" r="4" fill="#10B981" />
+              <circle cx="560" cy="32" r="8" fill="#10B981" opacity="0.3">
                 <animate attributeName="r" values="8;14;8" dur="2s" repeatCount="indefinite" />
                 <animate attributeName="opacity" values="0.3;0;0.3" dur="2s" repeatCount="indefinite" />
               </circle>
@@ -1256,15 +1450,15 @@ function InfrastructureSection() {
               </p>
               <div className="flex items-center gap-6 mt-6">
                 <div className="flex items-center gap-2">
-                  <div className="w-1.5 h-1.5 rounded-full bg-emerald-500/70" />
+                  {/*<div className="w-1.5 h-1.5 rounded-full bg-emerald-500/70" />*/}
                   <span className="text-sm text-white/40">&lt;50ms Latency</span>
                 </div>
                 <div className="flex items-center gap-2">
-                  <div className="w-1.5 h-1.5 rounded-full bg-emerald-500/70" />
+                  {/*<div className="w-1.5 h-1.5 rounded-full bg-emerald-500/70" />*/}
                   <span className="text-sm text-white/40">99.9% Fill Rate</span>
                 </div>
                 <div className="flex items-center gap-2">
-                  <div className="w-1.5 h-1.5 rounded-full bg-emerald-500/70" />
+                  {/*<div className="w-1.5 h-1.5 rounded-full bg-emerald-500/70" />*/}
                   <span className="text-sm text-white/40">Non-Custodial</span>
                 </div>
               </div>
@@ -1438,7 +1632,7 @@ function LuminousStreamPipeline() {
             viewport={{ once: true }}
             transition={{ delay: 0.1 }}
           >
-            Trade crypto like a pro—guarded by bulletproof infrastructure.
+            Chase the moon. We’ll guard the rocket.
           </motion.h2>
           <motion.p
             className="text-lg text-white/40 max-w-2xl mx-auto"
@@ -1447,7 +1641,7 @@ function LuminousStreamPipeline() {
             viewport={{ once: true }}
             transition={{ delay: 0.2 }}
           >
-            Your capital is protected at every step. Three hardened security layers work around the clock so you can focus on growing your portfolio.
+            Crypto is wild but with our triple-layer security, your only job is growing your portfolio. We’ve got the rest covered.
           </motion.p>
         </div>
 
@@ -1923,7 +2117,7 @@ function TradersSection() {
           viewport={{ once: true }}
           transition={{ delay: 0.4 }}
         >
-          <Link href="/waitlist">
+          <Link href="/register">
             <Button variant="ghost" className="text-white/50 hover:text-white mb-8">
               View all verified traders
               <ArrowRight className="w-4 h-4 ml-2" />
@@ -2003,7 +2197,7 @@ function PricingSection() {
               </p>
             </div>
 
-            <Link href="/waitlist" className="block mb-8">
+            <Link href="/register" className="block mb-8">
               <Button
                 variant="outline"
                 className="w-full h-11 rounded-lg border-white/20 bg-transparent text-white hover:bg-white/5 font-medium"
@@ -2050,7 +2244,7 @@ function PricingSection() {
               </p>
             </div>
 
-            <Link href="/waitlist" className="block mb-8">
+            <Link href="/register" className="block mb-8">
               <Button className="w-full h-11 rounded-lg bg-white text-black hover:bg-white/90 font-medium">
                 Get started
               </Button>
@@ -2095,7 +2289,7 @@ function PricingSection() {
               </p>
             </div>
 
-            <Link href="/waitlist" className="block mb-8">
+            <Link href="/register" className="block mb-8">
               <Button
                 variant="outline"
                 className="w-full h-11 rounded-lg border-white/20 bg-transparent text-white hover:bg-white/5 font-medium"
@@ -2155,12 +2349,12 @@ function FAQSection() {
   const [openIndex, setOpenIndex] = useState<number | null>(null);
 
   const faqs = [
-    { q: "Is my money safe with JARS?", a: "JARS is 100% non-custodial—we never hold your funds. Your assets remain on your exchange (Binance/Bybit) at all times. We only use API keys with trade permissions, never withdrawal access." },
-    { q: "What exchanges do you support?", a: "Currently we support Binance and Bybit for both Spot and Futures trading. OKX, KuCoin, and Bitget integrations are coming soon." },
-    { q: "How fast is the execution?", a: "Our C++ Sentinel engine achieves average latencies under 50ms from signal detection to order fill. This is faster than most manual traders can even react." },
+    { q: "Is my money safe with JARS?", a: "JARS is 100% non-custodial, we never hold your funds. Your assets remain on your exchange (Binance/Bybit) at all times. We only use API keys with trade permissions, never withdrawal access." },
+    { q: "What exchanges do you support?", a: "Currently we support Bybit for both Spot and Futures trading. OKX, KuCoin, Binance, and Bitget integrations are coming soon." },
+    { q: "How fast is the execution?", a: "Our sentinel engine achieves average latencies under 50ms from signal detection to order fill. This is faster than most manual traders can even react." },
     { q: "Can I stop copying at any time?", a: "Absolutely. You have full control. Pause or stop copying instantly through your dashboard, or use the Kill Switch to revoke all API access immediately." },
-    { q: "What is the minimum to start?", a: "You can start with as little as ₦100,000. However, we recommend ₦500,000+ to ensure proper position sizing across different trades and traders." },
-    { q: "How are traders verified?", a: "All master traders undergo a 6-month incubation period. We verify their identity (KYC), audit their trading history, enforce max drawdown limits, and monitor ongoing performance." },
+    { q: "What is the minimum to start?", a: "You can start with as little as $10" },
+    { q: "How are traders verified?", a: "All traders undergo a 6-month audit period. We verify their identity (KYC), audit their trading history, enforce max drawdown limits, and monitor ongoing performance." },
   ];
 
   return (
@@ -2290,8 +2484,10 @@ export default function LandingPage() {
             </div>
 
             <div className="flex items-center gap-4">
-              {/* Login hidden until launch */}
-              <Link href="/waitlist">
+              <Link href="/login" className="text-sm text-white/50 hover:text-white transition-colors font-medium">
+                Sign In
+              </Link>
+              <Link href="/register">
                 <Button className="bg-white text-black hover:bg-white/90 rounded-full h-9 px-5 text-sm font-semibold shadow-lg">
                   Get Started
                 </Button>
@@ -2329,9 +2525,9 @@ export default function LandingPage() {
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.3 }}
           >
-            Elite traders execute. Your portfolio mirrors every move in{" "}
+            Copy the wins, skip the stress. Mirror moves in{" "}
             <span className="text-white/70 font-medium">under 50 milliseconds</span>.
-            {" "}Non-custodial, verifiable, institutional-grade.
+            {" "}We provide the speed, you keep the keys.
           </motion.p>
 
           <motion.div
@@ -2340,7 +2536,7 @@ export default function LandingPage() {
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.4 }}
           >
-            <Link href="/waitlist">
+            <Link href="/register">
               <Button className="h-16 px-10 bg-white text-black hover:bg-white/90 rounded-2xl text-lg font-semibold">
                 Open free account
                 <ArrowRight className="w-5 h-5 ml-3" />
@@ -2386,10 +2582,6 @@ export default function LandingPage() {
         <ContainerScroll
           titleComponent={
             <div className="text-center mb-8">
-              <div className="flex items-center justify-center gap-3 mb-4">
-                <div className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
-                <span className="text-sm font-mono text-emerald-400 uppercase tracking-widest">Live Terminal Feed</span>
-              </div>
               <h2 className="text-4xl md:text-6xl font-semibold tracking-tight text-white mb-4">
                 Command Center
               </h2>
@@ -2436,7 +2628,7 @@ export default function LandingPage() {
             viewport={{ once: true }}
             transition={{ delay: 0.2 }}
           >
-            <Link href="/waitlist">
+            <Link href="/register">
               <Button className="h-14 px-10 bg-white text-black hover:bg-white/90 rounded-xl text-base font-semibold">
                 Open free account
                 <ArrowRight className="w-5 h-5 ml-2" />
@@ -2451,12 +2643,11 @@ export default function LandingPage() {
             viewport={{ once: true }}
             transition={{ delay: 0.3 }}
           >
-            ₦100,000 minimum · No credit card required · Non-custodial
+         No credit card required · Non-custodial
           </motion.p>
         </div>
       </section>
 
-      {/* Footer - Robinhood Style */}
       <footer className="bg-[#0a0a0a] border-t border-white/5">
         {/* Top Links Bar */}
         <div className="border-b border-white/5 py-4">
@@ -2567,7 +2758,6 @@ export default function LandingPage() {
             </div>
           </div>
 
-          {/* Bottom Bar */}
           <div className="flex flex-col lg:flex-row items-start lg:items-center justify-between gap-6 text-xs text-white/30">
             <div>
               <p>Ivy Technologies Ltd. © 2026. All rights reserved.</p>
