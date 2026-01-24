@@ -1,8 +1,8 @@
 import pytest
+from unittest.mock import AsyncMock, patch
+
 from application.utilities.config import settings
 from application.services.paystack_service import PaystackService
-from unittest.mock import AsyncMock
-
 from application.utilities.exceptions import DepositError
 
 
@@ -49,17 +49,7 @@ class TestPaymentRouter:
         assert response.status_code == 401
 
     @pytest.mark.asyncio
-    async def test_verify_payment_success(self, client, test_user, auth_headers, db_session, mocker):
-        mock_verify = mocker.patch(
-            "application.routers.payments.PaystackService.verify_transaction",
-            new_callable=AsyncMock,
-            return_value={
-                "status": "success",
-                "amount": 500000,  # 5000.00 Naira in kobo
-                "gateway_response": "Successful"
-            }
-        )
-
+    async def test_verify_payment_success(self, client, test_user, auth_headers, db_session):
         demo_payment = await PaystackService.initialize_tier_payment(
             db=db_session,
             user_id=test_user.id,
@@ -68,35 +58,45 @@ class TestPaymentRouter:
         )
         reference = demo_payment["reference"]
 
-        response = await client.get(
-            f"/api/v1/payments/verify/{reference}",
-            headers=auth_headers
-        )
+        with patch.object(
+            PaystackService,
+            "verify_transaction",
+            new_callable=AsyncMock,
+            return_value={
+                "status": "success",
+                "amount": 500000,  # 5000.00 Naira in kobo
+                "gateway_response": "Successful"
+            }
+        ) as mock_verify:
+            response = await client.get(
+                f"/api/v1/payments/verify/{reference}",
+                headers=auth_headers
+            )
 
-        assert response.status_code == 200
-        data = response.json()
-        assert data["status"] == "success"
-        assert data["reference"] == reference
-        assert data["amount"] == 5000.00 
-        mock_verify.assert_called_once_with(reference)
+            assert response.status_code == 200
+            data = response.json()
+            assert data["status"] == "success"
+            assert data["reference"] == reference
+            assert data["amount"] == 5000.00
+            mock_verify.assert_called_once_with(reference)
 
     @pytest.mark.asyncio
-    async def test_verify_payment_failure(self, client, auth_headers, mocker):
-        mocker.patch(
-            "application.routers.payments.PaystackService.verify_transaction",
-            new_callable=AsyncMock,
-            side_effect=DepositError(reason="Verification failed: Invalid transaction")
-        )
-
+    async def test_verify_payment_failure(self, client, auth_headers):
         fake_reference = "invalid_ref_123_hehe"
 
-        response = await client.get(
-            f"/api/v1/payments/verify/{fake_reference}",
-            headers=auth_headers
-        )
+        with patch.object(
+            PaystackService,
+            "verify_transaction",
+            new_callable=AsyncMock,
+            side_effect=DepositError(reason="Verification failed: Invalid transaction")
+        ):
+            response = await client.get(
+                f"/api/v1/payments/verify/{fake_reference}",
+                headers=auth_headers
+            )
 
-        assert response.status_code == 400
-        assert "Verification failed" in response.json()["detail"]
+            assert response.status_code == 400
+            assert "Verification failed" in response.json()["detail"]
 
     @pytest.mark.asyncio
     async def test_verify_payment_unauthorized(self, client):
@@ -104,20 +104,20 @@ class TestPaymentRouter:
         assert response.status_code == 401
 
     @pytest.mark.asyncio
-    async def test_get_banks_success(self, client, mocker):
-        mock_banks = mocker.patch(
-            "application.routers.payments.PaystackService.get_banks",
+    async def test_get_banks_success(self, client):
+        with patch.object(
+            PaystackService,
+            "get_banks",
             new_callable=AsyncMock,
             return_value=[
                 {"name": "Access Bank", "code": "044"},
                 {"name": "GTBank", "code": "058"},
             ]
-        )
+        ) as mock_banks:
+            response = await client.get("/api/v1/payments/banks")
 
-        response = await client.get("/api/v1/payments/banks")
-
-        assert response.status_code == 200
-        data = response.json()
-        assert "banks" in data
-        assert len(data["banks"]) == 2
-        mock_banks.assert_called_once()
+            assert response.status_code == 200
+            data = response.json()
+            assert "banks" in data
+            assert len(data["banks"]) == 2
+            mock_banks.assert_called_once()

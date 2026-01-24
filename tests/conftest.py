@@ -129,7 +129,7 @@ async def system_accounts(db_session: AsyncSession):
 
 @pytest_asyncio.fixture
 async def test_user(db_session: AsyncSession):
-    hashed_password = oauth2.get_password_hash("MorningCoffeeYeahhh42!")
+    hashed_password = oauth2.get_password_hash("MorningCoffee42!")
     user = account.User(
         id=uuid.uuid4(),
         first_name="Test",
@@ -242,13 +242,13 @@ def valid_user_data():
 
 @pytest.fixture
 def mock_send_email():
-    with patch("application.tasks.task_send_verification_email.delay") as mock:
+    with patch("application.core.tasks.task_send_verification_email.delay") as mock:
         mock.return_value = None
         yield mock
 
 
 @pytest.fixture
 def mock_send_welcome_email():
-    with patch("application.tasks.task_send_welcome_email.delay") as mock:
+    with patch("application.core.tasks.task_send_welcome_email.delay") as mock:
         mock.return_value = None
         yield mock

@@ -265,44 +265,41 @@ class TestLogin:
     
     @pytest.mark.asyncio
     async def test_login_with_correct_credentials_succeeds(self, db_session, test_user):
-        result = await AuthService.authenticate_user(
+        result = await AuthService.login_user(
             db_session, 
             test_user.email, 
             "MorningCoffee42!"
         )
         
         assert result is not None
-        assert result.email == test_user.email
+        assert "access_token" in result or "pre_auth_token" in result
 
     @pytest.mark.asyncio
     async def test_login_with_wrong_password_fails(self, db_session, test_user):
-        result = await AuthService.authenticate_user(
-            db_session, 
-            test_user.email, 
-            "TotallyWrongGuess99!"
-        )
-        
-        assert result is None
+        with pytest.raises(es.InvalidCredentialsError):
+            await AuthService.login_user(
+                db_session, 
+                test_user.email, 
+                "TotallyWrongGuess99!"
+            )
 
     @pytest.mark.asyncio
     async def test_login_with_nonexistent_email_fails(self, db_session):
-        result = await AuthService.authenticate_user(
-            db_session, 
-            "nonexistent@example.com", 
-            "SpringShowers2026!"
-        )
-        
-        assert result is None
+        with pytest.raises(es.UserNotFoundError):
+            await AuthService.login_user(
+                db_session, 
+                "nonexistent@example.com", 
+                "SpringShowers2026!"
+            )
 
     @pytest.mark.asyncio
     async def test_login_with_empty_password_fails(self, db_session, test_user):
-        result = await AuthService.authenticate_user(
-            db_session, 
-            test_user.email, 
-            ""
-        )
-        
-        assert result is None
+        with pytest.raises(es.InvalidCredentialsError):
+            await AuthService.login_user(
+                db_session, 
+                test_user.email, 
+                ""
+            )
 
     @pytest.mark.asyncio
     async def test_login_inactive_user_fails(self, db_session):
@@ -312,7 +309,7 @@ class TestLogin:
             first_name="Inactive",
             last_name="User",
             email="inactive@example.com",
-            status="SUSPENDED",
+            status="VERIFIED",
             password=hashed_password,
             country="NG",
             tier=UserTier.FREE,
@@ -325,13 +322,12 @@ class TestLogin:
         db_session.add(inactive_user)
         await db_session.commit()
         
-        result = await AuthService.authenticate_user(
-            db_session,
-            "inactive@example.com",
-            "WinterFrost2025!"
-        )
-        
-        assert result is None or result.is_active == False
+        with pytest.raises(es.PermissionDeniedError):
+            await AuthService.login_user(
+                db_session,
+                "inactive@example.com",
+                "WinterFrost2025!"
+            )
 
 
 class TestTokenGeneration:
@@ -351,14 +347,14 @@ class TestTokenGeneration:
         user_id = str(uuid.uuid4())
         token = oauth2.create_access_token(user_id)
         
-        payload = oauth2.verify_access_token(token, es.CredentialsError("Invalid"))
+        payload = oauth2.verify_access_token(token, es.InvalidCredentialsError("Invalid"))
         
         assert payload is not None
         assert payload.id == user_id
 
     def test_token_verification_invalid_token_raises(self):
-        with pytest.raises(es.CredentialsError):
-            oauth2.verify_access_token("invalid.token.here", es.CredentialsError("Invalid"))
+        with pytest.raises(es.InvalidCredentialsError):
+            oauth2.verify_access_token("invalid.token.here", es.InvalidCredentialsError("Invalid"))
 
     @pytest.mark.skip(reason="Mocking settings for expired token is complex")
     def test_token_verification_expired_token_raises(self):

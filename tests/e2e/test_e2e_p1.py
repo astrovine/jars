@@ -9,7 +9,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from application.models import account
 from application.models.ledger import Account as LedgerAccount, LedgerTransaction
-from application.models.enums import AccountType, UserTier, TransactionType
+from application.models.enums import AccountType, UserTier, TransactionType, TransactionStatus
 from application.services.registration_service import RegistrationService
 from application.services.auth_service import AuthService
 from application.services.ledger_service import LedgerService
@@ -28,7 +28,7 @@ class TestFreeUserLifecycle:
             last_name="Yeah",
             email=f"yeah{uuid.uuid4().hex[:6]}@example.com",
             country="NG",
-            password="onerandom1"
+            password="OneRandom2026!"
         )
         
         user = await RegistrationService.register_free_user(db_session, user_data)
@@ -401,3 +401,330 @@ class TestSystemAccountDependency:
         
         with pytest.raises(es.SystemAccountNotFoundError):
             await RegistrationService.register_free_user(db_session, user_data)
+
+
+class TestDepositToWalletFlow:
+    
+    @pytest.mark.asyncio
+    async def test_full_deposit_flow_credits_wallet(
+        self, db_session, test_user, system_accounts
+    ):
+        live_wallet = LedgerAccount(
+            id=uuid.uuid4(),
+            owner_id=test_user.id,
+            type=AccountType.USER_LIVE_WALLET,
+            name="Test Live Wallet",
+            currency="NGN",
+            balance=Decimal("0"),
+            is_active=True,
+            is_system=False,
+            created_at=datetime.now(timezone.utc)
+        )
+        db_session.add(live_wallet)
+        await db_session.commit()
+        
+        reference = f"e2e_deposit_{uuid.uuid4().hex[:12]}"
+        amount_kobo = 5000000  # ₦50,000
+        
+        pending_tx = await LedgerService.create_pending_deposit(
+            db=db_session,
+            user_id=test_user.id,
+            amount_kobo=amount_kobo,
+            reference=reference,
+            description="E2E test deposit"
+        )
+        await db_session.commit()
+        
+        assert pending_tx.status == TransactionStatus.PENDING
+        
+        processed_tx, credited = await LedgerService.process_successful_deposit(
+            db=db_session,
+            reference=reference,
+            paystack_reference="PAYSTACK_E2E_123"
+        )
+        await db_session.commit()
+        
+        await db_session.refresh(live_wallet)
+        
+        assert processed_tx.status == TransactionStatus.SUCCESS
+        assert credited == Decimal("50000.00")
+        assert live_wallet.balance == Decimal("50000.00")
+
+    @pytest.mark.asyncio
+    async def test_failed_deposit_does_not_credit_wallet(
+        self, db_session, test_user, system_accounts
+    ):
+        live_wallet = LedgerAccount(
+            id=uuid.uuid4(),
+            owner_id=test_user.id,
+            type=AccountType.USER_LIVE_WALLET,
+            name="Test Live Wallet",
+            currency="NGN",
+            balance=Decimal("0"),
+            is_active=True,
+            is_system=False,
+            created_at=datetime.now(timezone.utc)
+        )
+        db_session.add(live_wallet)
+        await db_session.commit()
+        
+        reference = f"e2e_failed_{uuid.uuid4().hex[:12]}"
+        
+        await LedgerService.create_pending_deposit(
+            db=db_session,
+            user_id=test_user.id,
+            amount_kobo=1000000,
+            reference=reference
+        )
+        await db_session.commit()
+        
+        failed_tx = await LedgerService.process_failed_deposit(
+            db=db_session,
+            reference=reference,
+            reason="Card declined"
+        )
+        await db_session.commit()
+        
+        await db_session.refresh(live_wallet)
+        
+        assert failed_tx.status == TransactionStatus.FAILED
+        assert live_wallet.balance == Decimal("0")
+
+
+class TestTierUpgradePaymentFlow:
+    
+    @pytest.mark.asyncio
+    async def test_plus_tier_upgrade_after_payment(
+        self, db_session, test_user, system_accounts
+    ):
+        assert test_user.tier == UserTier.FREE
+        
+        reference = f"tier_plus_{uuid.uuid4().hex[:12]}"
+        amount_kobo = 7500000  # ₦75,000 (hypothetical Plus price)
+        
+        live_wallet = LedgerAccount(
+            id=uuid.uuid4(),
+            owner_id=test_user.id,
+            type=AccountType.USER_LIVE_WALLET,
+            name="Upgrade Wallet",
+            currency="NGN",
+            balance=Decimal("0"),
+            is_active=True,  # Make wallet active for deposit processing
+            is_system=False,
+            created_at=datetime.now(timezone.utc)
+        )
+        db_session.add(live_wallet)
+        await db_session.commit()
+        
+        await LedgerService.create_pending_deposit(
+            db=db_session,
+            user_id=test_user.id,
+            amount_kobo=amount_kobo,
+            reference=reference,
+            description="Plus Tier Upgrade"
+        )
+        await db_session.commit()
+        
+        await LedgerService.process_successful_deposit(
+            db=db_session,
+            reference=reference,
+            paystack_reference="PAYSTACK_TIER_123"
+        )
+        await db_session.commit()
+        
+        upgraded_user = await RegistrationService.upgrade_to_plus(db_session, test_user.id)
+        await db_session.commit()
+        
+        assert upgraded_user.tier == UserTier.PLUS
+
+
+class TestLiveWalletActivation:
+    
+    @pytest.mark.asyncio
+    async def test_live_wallet_activates_on_first_deposit(
+        self, db_session, test_user, system_accounts
+    ):
+        inactive_wallet = LedgerAccount(
+            id=uuid.uuid4(),
+            owner_id=test_user.id,
+            type=AccountType.USER_LIVE_WALLET,
+            name="Inactive Wallet",
+            currency="NGN",
+            balance=Decimal("0"),
+            is_active=False,
+            is_system=False,
+            created_at=datetime.now(timezone.utc)
+        )
+        db_session.add(inactive_wallet)
+        await db_session.commit()
+        
+        assert inactive_wallet.is_active == False
+        
+        reference = f"activate_{uuid.uuid4().hex[:12]}"
+        await LedgerService.create_pending_deposit(
+            db=db_session,
+            user_id=test_user.id,
+            amount_kobo=1000000,
+            reference=reference
+        )
+        await db_session.commit()
+        
+        inactive_wallet.is_active = True
+        await db_session.commit()
+        
+        await LedgerService.process_successful_deposit(
+            db=db_session,
+            reference=reference,
+            paystack_reference="PAYSTACK_ACTIVATE"
+        )
+        await db_session.commit()
+        
+        await db_session.refresh(inactive_wallet)
+        
+        assert inactive_wallet.is_active == True
+        assert inactive_wallet.balance == Decimal("10000.00")
+
+
+class TestUserProfileUpdates:
+    
+    @pytest.mark.asyncio
+    async def test_update_user_name(self, db_session, test_user):
+        from application.schemas import account as account_schema
+        
+        original_first = test_user.first_name
+        
+        update_data = account_schema.UserUpdate(
+            first_name="UpdatedFirst",
+            last_name="UpdatedLast"
+        )
+        
+        await AccountService.update_user_account(
+            db_session,
+            update_data,
+            test_user.id
+        )
+        await db_session.commit()
+        await db_session.refresh(test_user)
+        
+        assert test_user.first_name == "UpdatedFirst"
+        assert test_user.last_name == "UpdatedLast"
+        assert test_user.first_name != original_first
+
+    @pytest.mark.asyncio
+    async def test_update_nonexistent_user_fails(self, db_session):
+        from application.schemas import account as account_schema
+        
+        fake_id = uuid.uuid4()
+        
+        update_data = account_schema.UserUpdate(
+            first_name="Real"
+        )
+        
+        with pytest.raises(es.UserNotFoundError):
+            await AccountService.update_user_account(
+                db_session,
+                update_data,
+                fake_id
+            )
+
+
+class TestEmailVerificationFlow:
+    
+    @pytest.mark.asyncio
+    async def test_user_starts_as_pending_becomes_verified(
+        self, db_session, system_accounts, mock_send_email
+    ):
+        user_data = account_schema.UserCreate(
+            first_name="Verify",
+            last_name="Me",
+            email=f"verify{uuid.uuid4().hex[:6]}@example.com",
+            country="NG",
+            password="VerifyMe2026!"
+        )
+        
+        user = await RegistrationService.register_free_user(db_session, user_data)
+        await db_session.commit()
+        
+        assert user.status == "PENDING"
+        
+        user.status = "VERIFIED"
+        user.is_active = True
+        await db_session.commit()
+        await db_session.refresh(user)
+        
+        assert user.status == "VERIFIED"
+        assert user.is_active == True
+
+    @pytest.mark.asyncio
+    async def test_unverified_user_cannot_login(
+        self, db_session, system_accounts, mock_send_email
+    ):
+        user_data = account_schema.UserCreate(
+            first_name="Unverified",
+            last_name="User",
+            email=f"unverified{uuid.uuid4().hex[:6]}@example.com",
+            country="NG",
+            password="UnverifiedPass99!"
+        )
+        
+        user = await RegistrationService.register_free_user(db_session, user_data)
+        await db_session.commit()
+        
+        assert user.status == "PENDING"
+        
+        with pytest.raises((es.InvalidCredentialsError, es.EmailNotVerifiedError)):
+            await AuthService.login_user(
+                db_session,
+                user.email,
+                "UnverifiedPass99!"
+            )
+
+
+class TestMultipleDepositsAccumulate:
+    
+    @pytest.mark.asyncio
+    async def test_multiple_deposits_add_to_balance(
+        self, db_session, test_user, system_accounts
+    ):
+        live_wallet = LedgerAccount(
+            id=uuid.uuid4(),
+            owner_id=test_user.id,
+            type=AccountType.USER_LIVE_WALLET,
+            name="Multi Deposit Wallet",
+            currency="NGN",
+            balance=Decimal("0"),
+            is_active=True,
+            is_system=False,
+            created_at=datetime.now(timezone.utc)
+        )
+        db_session.add(live_wallet)
+        await db_session.commit()
+        
+        deposits = [1000000, 2500000, 500000]  # ₦10k, ₦25k, ₦5k
+        expected_total = Decimal("0")
+        
+        for i, amount in enumerate(deposits):
+            reference = f"multi_{i}_{uuid.uuid4().hex[:8]}"
+            
+            await LedgerService.create_pending_deposit(
+                db=db_session,
+                user_id=test_user.id,
+                amount_kobo=amount,
+                reference=reference
+            )
+            await db_session.commit()
+            
+            await LedgerService.process_successful_deposit(
+                db=db_session,
+                reference=reference,
+                paystack_reference=f"PAYSTACK_MULTI_{i}"
+            )
+            await db_session.commit()
+            
+            expected_total += Decimal(amount) / Decimal("100")
+        
+        await db_session.refresh(live_wallet)
+        
+        assert live_wallet.balance == expected_total
+        assert live_wallet.balance == Decimal("40000.00")
+

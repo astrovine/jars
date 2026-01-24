@@ -77,7 +77,7 @@ class TestVirtualBalanceReset:
         demo_wallet = LedgerAccount(id=uuid.uuid4(), owner_id=test_user.id, type=AccountType.USER_DEMO_WALLET, name="Test Demo Wallet", currency="USD", balance=Decimal("0"), is_active=True, is_system=False, created_at=datetime.now(timezone.utc))
         db_session.add(demo_wallet)
         await db_session.commit()
-        with pytest.raises(es.InvalidRequestError, match="30 days"):
+        with pytest.raises(es.InvalidRequestError, match="Free reset not available"):
             await LedgerService.reset_virtual_balance(db_session, test_user.id, is_paid=False)
 
     @pytest.mark.asyncio
@@ -147,11 +147,12 @@ class TestWalletInfo:
     
     @pytest.mark.asyncio
     async def test_get_wallet_info_demo_wallet(self, db_session, test_user):
-        demo_wallet = LedgerAccount(id=uuid.uuid4(), owner_id=test_user.id, type=AccountType.USER_DEMO_WALLET, name="Test Demo Wallet", currency="USD", balance=Decimal("8500.50"), is_active=True, is_system=False, created_at=datetime.now(timezone.utc))
-        db_session.add(demo_wallet)
+        live_wallet = LedgerAccount(id=uuid.uuid4(), owner_id=test_user.id, type=AccountType.USER_LIVE_WALLET, name="Test Live Wallet", currency="USD", balance=Decimal("8500.50"), is_active=True, is_system=False, created_at=datetime.now(timezone.utc))
+        db_session.add(live_wallet)
         await db_session.commit()
         info = await LedgerService.get_wallet_info(db_session, test_user.id)
         assert info is not None
+        assert "balance" in info
         assert info["balance"] == Decimal("8500.50")
 
     @pytest.mark.asyncio
