@@ -1,9 +1,10 @@
 import type { Metadata, Viewport } from "next";
-import { GeistSans } from "geist/font/sans";
+import { Inter } from "next/font/google";
 import { GeistMono } from "geist/font/mono";
 import "./globals.css";
 import { Providers } from "@/components/providers";
 
+const inter = Inter({ subsets: ["latin"], variable: "--font-inter" });
 
 export const metadata: Metadata = {
   title: {
@@ -61,12 +62,9 @@ export default function RootLayout({
       <head>
         <link rel="icon" href="/favicon.ico" sizes="any" />
         <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
-        <link rel="preconnect" href="https://fonts.googleapis.com" />
-        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
-        <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,500;1,400;1,500&display=swap" rel="stylesheet" />
       </head>
       <body
-        className={`${GeistSans.variable} ${GeistMono.variable} font-sans antialiased`}
+        className={`${inter.variable} ${GeistMono.variable} font-sans antialiased`}
       >
         <Providers>{children}</Providers>
       </body>

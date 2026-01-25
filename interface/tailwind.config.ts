@@ -10,66 +10,62 @@ const config: Config = {
   theme: {
     extend: {
       colors: {
-        // Core palette - Almost Vantablack
-        border: "#1a1a1a",
-        input: "#1a1a1a",
-        ring: "#10B981",
-        background: "#020202",
-        foreground: "#EDEDED",
-
-        // Primary - Emerald gradient for money/speed
+        border: "transparent", // FORCE INVISIBLE BORDERS
+        input: "hsl(var(--input))",
+        ring: "hsl(var(--ring))",
+        background: "hsl(var(--background))",
+        foreground: "hsl(var(--foreground))",
         primary: {
-          DEFAULT: "#10B981",
-          foreground: "#020202",
-          50: "#ECFDF5",
-          100: "#D1FAE5",
-          200: "#A7F3D0",
-          300: "#6EE7B7",
-          400: "#34D399",
-          500: "#10B981",
-          600: "#059669",
-          700: "#047857",
-          800: "#065F46",
-          900: "#064E3B",
+          DEFAULT: "hsl(var(--primary))",
+          foreground: "hsl(var(--primary-foreground))",
         },
-
-        // Secondary - Subtle dark grays
         secondary: {
-          DEFAULT: "#0A0A0A",
-          foreground: "#EDEDED",
+          DEFAULT: "hsl(var(--secondary))",
+          foreground: "hsl(var(--secondary-foreground))",
         },
-
-        // Destructive - Red for losses
         destructive: {
-          DEFAULT: "#EF4444",
-          foreground: "#ffffff",
+          DEFAULT: "hsl(var(--destructive))",
+          foreground: "hsl(var(--destructive-foreground))",
         },
-
-        // Muted - Low contrast text
         muted: {
-          DEFAULT: "#1a1a1a",
-          foreground: "#666666",
+          DEFAULT: "hsl(var(--muted))",
+          foreground: "hsl(var(--muted-foreground))",
         },
-
-        // Accent - Teal for gradients
         accent: {
-          DEFAULT: "#14B8A6",
-          foreground: "#020202",
+          DEFAULT: "hsl(var(--accent))",
+          foreground: "hsl(var(--accent-foreground))",
         },
-
-        // Card backgrounds
-        card: {
-          DEFAULT: "#0A0A0A",
-          foreground: "#EDEDED",
-        },
-
-        // Popover
         popover: {
-          DEFAULT: "#0A0A0A",
-          foreground: "#EDEDED",
+          DEFAULT: "hsl(var(--popover))",
+          foreground: "hsl(var(--popover-foreground))",
+        },
+        card: {
+          DEFAULT: "hsl(var(--card))",
+          foreground: "hsl(var(--card-foreground))",
         },
 
-        // Semantic colors
+        // Sidebar - CSS variable based for proper theming
+        sidebar: {
+          DEFAULT: "hsl(var(--sidebar))",
+          foreground: "hsl(var(--sidebar-foreground))",
+          primary: "hsl(var(--sidebar-primary))",
+          "primary-foreground": "hsl(var(--sidebar-primary-foreground))",
+          accent: "hsl(var(--sidebar-accent))",
+          "accent-foreground": "hsl(var(--sidebar-accent-foreground))",
+          border: "transparent", // FORCE INVISIBLE SIDEBAR BORDER
+          ring: "hsl(var(--sidebar-ring))",
+        },
+
+        // Chart colors
+        chart: {
+          "1": "hsl(var(--chart-1))",
+          "2": "hsl(var(--chart-2))",
+          "3": "hsl(var(--chart-3))",
+          "4": "hsl(var(--chart-4))",
+          "5": "hsl(var(--chart-5))",
+        },
+
+        // Semantic colors (keep these if needed)
         profit: "#10B981",
         loss: "#EF4444",
         warning: "#F59E0B",
