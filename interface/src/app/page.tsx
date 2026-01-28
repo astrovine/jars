@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import React, { useEffect, useState, useRef, useCallback } from "react";
 import Link from "next/link";
@@ -27,6 +27,10 @@ import {
   Activity,
   BadgeCheck,
   Sparkles,
+  Github,
+  Twitter,
+  Copy,
+  Terminal as TerminalIcon,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { ContainerScroll } from "@/components/ui/container-scroll-animation";
@@ -41,6 +45,7 @@ import { CookieConsent } from "@/components/cookie-consent";
 import { InfiniteMovingCards } from "@/components/ui/infinite-moving-cards";
 import { TextHoverEffect } from "@/components/ui/text-hover-effect";
 import WorldMap from "@/components/ui/world-map";
+import { TerminalDemo } from "@/components/terminal-demo";
 
 const World = dynamic(() => import("@/components/ui/globe").then((m) => m.World), {
   ssr: false,
@@ -279,1055 +284,6 @@ function CryptoMarquee() {
 }
 
 
-function LivePulse() {
-  const [pulses, setPulses] = useState<number[]>([]);
-
-  useEffect(() => {
-    const interval = setInterval(() => {
-      setPulses(prev => {
-        const newPulses = [...prev, Date.now()].slice(-5);
-        return newPulses;
-      });
-    }, 800 + Math.random() * 2000);
-
-    return () => clearInterval(interval);
-  }, []);
-
-  return (
-    <div className="absolute inset-0 overflow-hidden pointer-events-none">
-      <AnimatePresence>
-        {pulses.map((id) => (
-          <motion.div
-            key={id}
-            className="absolute left-0 top-1/2 h-px w-full"
-            initial={{ x: "-100%", opacity: 0 }}
-            animate={{ x: "100%", opacity: [0, 1, 1, 0] }}
-            exit={{ opacity: 0 }}
-            transition={{ duration: 1.5, ease: "easeInOut" }}
-          >
-            <div className="h-full w-32 bg-gradient-to-r from-transparent via-emerald-500 to-transparent" />
-          </motion.div>
-        ))}
-      </AnimatePresence>
-    </div>
-  );
-}
-
-
-// Live Ticker Tape Component
-function TickerTape() {
-  const tickers = [
-    { symbol: "BTC/USDT", price: "72,450.20", change: "+2.34%", positive: true },
-    { symbol: "ETH/USDT", price: "3,892.15", change: "+1.89%", positive: true },
-    { symbol: "SOL/USDT", price: "142.67", change: "-0.45%", positive: false },
-    { symbol: "BNB/USDT", price: "612.30", change: "+0.92%", positive: true },
-    { symbol: "XRP/USDT", price: "0.6234", change: "+3.21%", positive: true },
-    { symbol: "AVAX/USDT", price: "38.45", change: "-1.12%", positive: false },
-  ];
-
-  return (
-    <div className="h-8 bg-[#0a0a0a] border-b border-[#1a1a1a] overflow-hidden relative">
-      <div className="absolute left-0 top-0 bottom-0 w-16 bg-gradient-to-r from-[#0a0a0a] to-transparent z-10" />
-      <div className="absolute right-0 top-0 bottom-0 w-16 bg-gradient-to-l from-[#0a0a0a] to-transparent z-10" />
-      <div className="flex animate-marquee items-center h-full">
-        {[...tickers, ...tickers, ...tickers].map((ticker, i) => (
-          <div key={i} className="flex items-center gap-3 px-6 border-r border-[#1a1a1a] h-full">
-            <span className="text-[11px] font-mono text-white/60">{ticker.symbol}</span>
-            <span className="text-[11px] font-mono text-white">{ticker.price}</span>
-            <span className={`text-[11px] font-mono ${ticker.positive ? 'text-emerald-400' : 'text-red-400'}`}>
-              {ticker.change}
-            </span>
-          </div>
-        ))}
-      </div>
-    </div>
-  );
-}
-
-// Order Book Component
-function OrderBook() {
-  const bids = [
-    { price: "72,448.50", size: "2.341", total: "45.2%" },
-    { price: "72,447.20", size: "1.892", total: "38.1%" },
-    { price: "72,446.00", size: "3.124", total: "62.8%" },
-    { price: "72,444.80", size: "0.892", total: "18.2%" },
-    { price: "72,443.50", size: "1.456", total: "29.4%" },
-  ];
-  const asks = [
-    { price: "72,451.00", size: "1.234", total: "24.8%" },
-    { price: "72,452.30", size: "2.567", total: "51.6%" },
-    { price: "72,453.80", size: "0.891", total: "17.9%" },
-    { price: "72,455.00", size: "1.678", total: "33.8%" },
-    { price: "72,456.20", size: "2.901", total: "58.4%" },
-  ];
-
-  return (
-    <div className="flex flex-col h-full">
-      <div className="px-3 py-2 border-b border-[#1a1a1a] flex items-center justify-between">
-        <span className="text-[10px] font-mono text-white/40 uppercase tracking-wider">Order Book</span>
-        <span className="text-[10px] font-mono text-cyan-400">0.01</span>
-      </div>
-      <div className="flex-1 overflow-hidden">
-        {/* Headers */}
-        <div className="grid grid-cols-3 px-3 py-1.5 text-[9px] font-mono text-white/30 uppercase border-b border-[#1a1a1a]">
-          <span>Price</span>
-          <span className="text-right">Size</span>
-          <span className="text-right">Total</span>
-        </div>
-        {/* Asks (reversed) */}
-        <div className="flex flex-col-reverse">
-          {asks.map((ask, i) => (
-            <div key={i} className="grid grid-cols-3 px-3 py-1 text-[10px] font-mono relative group hover:bg-red-500/5">
-              <div
-                className="absolute inset-0 bg-red-500/10 origin-right"
-                style={{ width: ask.total }}
-              />
-              <span className="text-red-400 relative z-10">{ask.price}</span>
-              <span className="text-white/60 text-right relative z-10">{ask.size}</span>
-              <span className="text-white/30 text-right relative z-10">{ask.total}</span>
-            </div>
-          ))}
-        </div>
-        {/* Spread */}
-        <div className="px-3 py-2 border-y border-[#1a1a1a] bg-[#0d0d0d] flex items-center justify-between">
-          <span className="text-[11px] font-mono text-white">72,450.20</span>
-          <span className="text-[9px] font-mono text-white/30">Spread: 0.01%</span>
-        </div>
-        {/* Bids */}
-        {bids.map((bid, i) => (
-          <div key={i} className="grid grid-cols-3 px-3 py-1 text-[10px] font-mono relative group hover:bg-emerald-500/5">
-            <div
-              className="absolute inset-0 bg-emerald-500/10 origin-right"
-              style={{ width: bid.total }}
-            />
-            <span className="text-emerald-400 relative z-10">{bid.price}</span>
-            <span className="text-white/60 text-right relative z-10">{bid.size}</span>
-            <span className="text-white/30 text-right relative z-10">{bid.total}</span>
-          </div>
-        ))}
-      </div>
-    </div>
-  );
-}
-
-// Market Stats Component
-function MarketStats() {
-  return (
-    <div className="grid grid-cols-2 gap-px bg-[#1a1a1a]">
-      {[
-        { label: "24h Volume", value: "$2.84B", change: "+12.4%" },
-        { label: "Open Interest", value: "$18.2B", change: "+3.2%" },
-        { label: "Funding Rate", value: "0.0124%", change: "", highlight: true },
-        { label: "Next Funding", value: "04:32:18", change: "" },
-        { label: "Mark Price", value: "72,449.82", change: "" },
-        { label: "Index Price", value: "72,451.20", change: "" },
-      ].map((stat, i) => (
-        <div key={i} className="bg-[#0a0a0a] px-3 py-2.5">
-          <div className="text-[9px] font-mono text-white/30 uppercase mb-0.5">{stat.label}</div>
-          <div className="flex items-baseline gap-1.5">
-            <span className={`text-[12px] font-mono ${stat.highlight ? 'text-amber-400' : 'text-white'}`}>
-              {stat.value}
-            </span>
-            {stat.change && (
-              <span className="text-[9px] font-mono text-emerald-400">{stat.change}</span>
-            )}
-          </div>
-        </div>
-      ))}
-    </div>
-  );
-}
-
-// Live Clock Component
-function LiveClock() {
-  const [time, setTime] = useState(new Date());
-  const [mounted, setMounted] = useState(false);
-
-  useEffect(() => {
-    setMounted(true);
-    const timer = setInterval(() => setTime(new Date()), 1000);
-    return () => clearInterval(timer);
-  }, []);
-
-  if (!mounted) {
-    return <span className="font-mono text-[11px] text-cyan-400 tabular-nums">Loading...</span>;
-  }
-
-  return (
-    <span className="font-mono text-[11px] text-cyan-400 tabular-nums">
-      {time.toLocaleTimeString('en-US', { hour12: false })}.{String(time.getMilliseconds()).padStart(3, '0')}
-    </span>
-  );
-}
-
-function DashboardPreview() {
-  const [latency] = useState(44);
-
-  const executionLog = [
-    { event: "WS_CONNECT", detail: "binance-futures-stream", time: "00:00:00.001", status: "OK" },
-    { event: "SIGNAL_RX", detail: "AlphaTrader_01 → LONG BTC", time: "10:42:05.002", status: "OK" },
-    { event: "RISK_CHK", detail: "Position limit: PASS | Margin: PASS", time: "10:42:05.005", status: "OK" },
-    { event: "SIZE_CALC", detail: "2.93% alloc → 0.055 BTC", time: "10:42:05.008", status: "OK" },
-    { event: "ORD_SUBMIT", detail: "MARKET BUY 0.055 BTC @ MKT", time: "10:42:05.012", status: "SENT" },
-    { event: "ORD_ACK", detail: "Binance orderId: 847291034", time: "10:42:05.018", status: "OK" },
-    { event: "FILL", detail: "0.055 BTC @ 72,450.20 USDT", time: "10:42:05.046", status: "FILLED" },
-    { event: "PNL_INIT", detail: "Entry logged | SL: 71,280 | TP: 74,620", time: "10:42:05.048", status: "OK" },
-  ];
-
-  return (
-    <div className="w-full relative py-24 overflow-hidden bg-[#020202]">
-      {/* Subtle Ambient Glow */}
-      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[60vw] h-[40vh] bg-emerald-900/5 blur-[200px] rounded-full pointer-events-none" />
-
-      <div className="relative z-10 max-w-[1900px] mx-auto px-4 lg:px-6">
-
-        {/* Header */}
-        <div className="mb-8 lg:flex items-end justify-between">
-          <div className="max-w-2xl">
-            <motion.div
-              className="flex items-center gap-3 mb-4"
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-            >
-              <div className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
-              <span className="text-[11px] font-mono text-emerald-400 uppercase tracking-widest">Live Terminal Feed</span>
-            </motion.div>
-            <motion.h2
-              className="text-4xl lg:text-5xl font-semibold tracking-tight text-white mb-3"
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-            >
-              Command Center
-            </motion.h2>
-            <motion.p
-              className="text-base lg:text-lg text-white/40 leading-relaxed font-light"
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ delay: 0.1 }}
-            >
-              Institutional-grade execution monitoring.
-              <span className="text-white/60"> Every millisecond. Every trade.</span>
-            </motion.p>
-          </div>
-
-          {/* System Status Bar */}
-          <motion.div
-            className="hidden lg:flex items-center gap-2 mt-6 lg:mt-0"
-            initial={{ opacity: 0 }}
-            whileInView={{ opacity: 1 }}
-            viewport={{ once: true }}
-          >
-            <div className="flex items-center gap-2 px-3 py-1.5 rounded bg-[#0a0a0a] border border-[#1a1a1a]">
-              <div className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
-              <span className="text-[10px] font-mono text-emerald-400">BINANCE</span>
-            </div>
-            <div className="flex items-center gap-2 px-3 py-1.5 rounded bg-[#0a0a0a] border border-[#1a1a1a]">
-              <div className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
-              <span className="text-[10px] font-mono text-emerald-400">BYBIT</span>
-            </div>
-            <div className="px-3 py-1.5 rounded bg-[#0a0a0a] border border-[#1a1a1a]">
-              <span className="text-[10px] font-mono text-amber-400">{latency}ms RTT</span>
-            </div>
-            <div className="px-3 py-1.5 rounded bg-[#0a0a0a] border border-[#1a1a1a]">
-              <span className="text-[10px] font-mono text-white/50">1,247 ACTIVE</span>
-            </div>
-          </motion.div>
-        </div>
-
-        {/* The Bloomberg-Style Terminal Frame */}
-        <motion.div
-          className="w-full rounded-sm border border-[#1a1a1a] bg-[#0a0a0a] shadow-2xl shadow-black/50 overflow-hidden"
-          initial={{ opacity: 0, y: 40 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
-          transition={{ delay: 0.2 }}
-        >
-          {/* Terminal Top Bar */}
-          <div className="h-9 border-b border-[#1a1a1a] flex items-center justify-between px-3 bg-[#0d0d0d]">
-            <div className="flex items-center gap-3">
-              <div className="flex items-center gap-1.5">
-                <div className="w-2.5 h-2.5 rounded-full bg-red-500/80" />
-                <div className="w-2.5 h-2.5 rounded-full bg-amber-500/80" />
-                <div className="w-2.5 h-2.5 rounded-full bg-emerald-500/80" />
-              </div>
-              <div className="h-4 w-px bg-[#1a1a1a]" />
-              <div className="flex items-center gap-2">
-                <span className="text-[10px] font-mono text-white/30">JARS</span>
-                <span className="text-[10px] font-mono text-cyan-400">TERMINAL</span>
-                <span className="text-[10px] font-mono text-white/20">v2.4.0</span>
-              </div>
-            </div>
-            <div className="flex items-center gap-4">
-              <div className="flex items-center gap-2">
-                <Activity className="w-3 h-3 text-emerald-400" />
-                <span className="text-[10px] font-mono text-emerald-400">LIVE</span>
-              </div>
-              <LiveClock />
-            </div>
-          </div>
-
-          {/* Ticker Tape */}
-          <TickerTape />
-
-          {/* Main Terminal Grid - Bloomberg-style Bento */}
-          <div className="grid grid-cols-1 lg:grid-cols-12 min-h-auto lg:min-h-[750px]">
-
-            {/* LEFT PANEL: Main Chart + Position */}
-            <div className="col-span-1 lg:col-span-7 border-b lg:border-b-0 lg:border-r border-[#1a1a1a] flex flex-col">
-
-              {/* Instrument Header */}
-              <div className="px-4 py-3 border-b border-[#1a1a1a] flex items-center justify-between bg-[#0d0d0d]">
-                <div className="flex items-center gap-4">
-                  <div className="flex items-center gap-2">
-                    <div className="w-6 h-6 rounded bg-amber-500/20 flex items-center justify-center">
-                      <img src={CRYPTO_LOGOS[0].src} alt="BTC" className="w-4 h-4" />
-                    </div>
-                    <div>
-                      <div className="text-sm font-mono text-white font-medium">BTC/USDT</div>
-                      <div className="text-[9px] font-mono text-white/30">PERPETUAL</div>
-                    </div>
-                  </div>
-                  <div className="h-6 w-px bg-[#1a1a1a]" />
-                  <div className="flex items-center gap-3">
-                    {["1m", "5m", "15m", "1H", "4H", "1D"].map((tf, i) => (
-                      <button
-                        key={tf}
-                        className={`text-[10px] font-mono px-2 py-1 rounded ${i === 2 ? 'bg-white/10 text-white' : 'text-white/30 hover:text-white/60'}`}
-                      >
-                        {tf}
-                      </button>
-                    ))}
-                  </div>
-                </div>
-                <div className="flex items-center gap-3">
-                  <span className="text-[10px] font-mono text-white/30">AlphaTrader_01</span>
-                  <div className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
-                </div>
-              </div>
-
-              {/* Price Display + Chart */}
-              <div className="flex-1 relative min-h-[300px]">
-                {/* Large Price Display */}
-                <div className="absolute top-4 left-4 z-10">
-                  <div className="text-[11px] font-mono text-white/30 mb-1">LAST PRICE</div>
-                  <div className="flex items-baseline gap-1">
-                    <span className="text-4xl font-mono text-white font-medium tabular-nums">72,450</span>
-                    <span className="text-xl font-mono text-white/40 tabular-nums">.20</span>
-                  </div>
-                  <div className="flex items-center gap-2 mt-1">
-                    <span className="px-1.5 py-0.5 rounded-sm bg-emerald-500/20 text-emerald-400 text-[11px] font-mono font-medium">+2.34%</span>
-                    <span className="text-[10px] font-mono text-white/30">24H</span>
-                  </div>
-                </div>
-
-                {/* Mini Stats Row */}
-                <div className="absolute top-4 right-4 z-10 flex items-center gap-4">
-                  <div className="text-right">
-                    <div className="text-[9px] font-mono text-white/30">HIGH</div>
-                    <div className="text-[11px] font-mono text-white/60">73,120.00</div>
-                  </div>
-                  <div className="text-right">
-                    <div className="text-[9px] font-mono text-white/30">LOW</div>
-                    <div className="text-[11px] font-mono text-white/60">71,240.50</div>
-                  </div>
-                  <div className="text-right">
-                    <div className="text-[9px] font-mono text-white/30">VOL</div>
-                    <div className="text-[11px] font-mono text-white/60">$2.84B</div>
-                  </div>
-                </div>
-
-                {/* Chart SVG - Professional Candlestick Chart */}
-                <svg className="absolute inset-0 w-full h-full" viewBox="0 0 800 350" preserveAspectRatio="none">
-                  <defs>
-                    {/* Gradients for indicators */}
-                    <linearGradient id="bollingerFill" x1="0%" y1="0%" x2="0%" y2="100%">
-                      <stop offset="0%" stopColor="#6366f1" stopOpacity="0.08" />
-                      <stop offset="100%" stopColor="#6366f1" stopOpacity="0.02" />
-                    </linearGradient>
-                    <linearGradient id="volGreen" x1="0%" y1="100%" x2="0%" y2="0%">
-                      <stop offset="0%" stopColor="#10B981" stopOpacity="0.8" />
-                      <stop offset="100%" stopColor="#10B981" stopOpacity="0.3" />
-                    </linearGradient>
-                    <linearGradient id="volRed" x1="0%" y1="100%" x2="0%" y2="0%">
-                      <stop offset="0%" stopColor="#ef4444" stopOpacity="0.8" />
-                      <stop offset="100%" stopColor="#ef4444" stopOpacity="0.3" />
-                    </linearGradient>
-                  </defs>
-
-                  {/* Background Grid - 5% opacity, subtle */}
-                  <g opacity="0.05">
-                    {/* Horizontal grid lines */}
-                    {[0, 1, 2, 3, 4, 5, 6, 7, 8].map((i) => (
-                      <line key={`h${i}`} x1="0" y1={35 + i * 30} x2="800" y2={35 + i * 30} stroke="#fff" strokeWidth="1" />
-                    ))}
-                    {/* Vertical grid lines */}
-                    {[0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15].map((i) => (
-                      <line key={`v${i}`} x1={50 * i} y1="0" x2={50 * i} y2="280" stroke="#fff" strokeWidth="1" />
-                    ))}
-                  </g>
-
-                  {/* Support Zone - faint translucent rectangle */}
-                  <rect x="0" y="200" width="800" height="30" fill="#10B981" opacity="0.06" />
-                  <line x1="0" y1="215" x2="800" y2="215" stroke="#10B981" strokeWidth="1" strokeDasharray="3,3" opacity="0.3" />
-
-                  {/* Resistance Zone - faint translucent rectangle */}
-                  <rect x="0" y="60" width="800" height="25" fill="#ef4444" opacity="0.06" />
-                  <line x1="0" y1="72" x2="800" y2="72" stroke="#ef4444" strokeWidth="1" strokeDasharray="3,3" opacity="0.3" />
-
-                  {/* Bollinger Bands - thin lines with fill */}
-                  <path d="M0,180 Q100,195 200,175 T400,140 T600,85 T800,55" fill="none" stroke="#6366f1" strokeWidth="0.5" opacity="0.4" />
-                  <path d="M0,230 Q100,240 200,225 T400,195 T600,130 T800,95" fill="none" stroke="#6366f1" strokeWidth="0.5" opacity="0.4" />
-                  <path d="M0,230 Q100,240 200,225 T400,195 T600,130 T800,95 L800,55 Q600,85 400,140 T200,175 T0,180 Z" fill="url(#bollingerFill)" />
-
-                  {/* 200-day Moving Average - smooth orange line */}
-                  <path d="M0,210 Q100,205 200,195 T400,165 T600,108 T800,75" fill="none" stroke="#f59e0b" strokeWidth="1.5" opacity="0.7" />
-
-                  {/* Candlesticks - OHLC data with realistic patterns */}
-                  {/* Candle 1 - Red */}
-                  <line x1="40" y1="195" x2="40" y2="225" stroke="#ef4444" strokeWidth="1" />
-                  <rect x="35" y="200" width="10" height="15" fill="#ef4444" />
-                  {/* Candle 2 - Green */}
-                  <line x1="80" y1="188" x2="80" y2="218" stroke="#10B981" strokeWidth="1" />
-                  <rect x="75" y="193" width="10" height="18" fill="#10B981" />
-                  {/* Candle 3 - Red */}
-                  <line x1="120" y1="175" x2="120" y2="210" stroke="#ef4444" strokeWidth="1" />
-                  <rect x="115" y="182" width="10" height="20" fill="#ef4444" />
-                  {/* Candle 4 - Green */}
-                  <line x1="160" y1="165" x2="160" y2="200" stroke="#10B981" strokeWidth="1" />
-                  <rect x="155" y="170" width="10" height="22" fill="#10B981" />
-                  {/* Candle 5 - Green */}
-                  <line x1="200" y1="155" x2="200" y2="188" stroke="#10B981" strokeWidth="1" />
-                  <rect x="195" y="160" width="10" height="20" fill="#10B981" />
-                  {/* Candle 6 - Red */}
-                  <line x1="240" y1="148" x2="240" y2="178" stroke="#ef4444" strokeWidth="1" />
-                  <rect x="235" y="152" width="10" height="18" fill="#ef4444" />
-                  {/* Candle 7 - Green */}
-                  <line x1="280" y1="140" x2="280" y2="172" stroke="#10B981" strokeWidth="1" />
-                  <rect x="275" y="145" width="10" height="20" fill="#10B981" />
-                  {/* Candle 8 - Green */}
-                  <line x1="320" y1="125" x2="320" y2="162" stroke="#10B981" strokeWidth="1" />
-                  <rect x="315" y="130" width="10" height="25" fill="#10B981" />
-                  {/* Candle 9 - Red */}
-                  <line x1="360" y1="118" x2="360" y2="150" stroke="#ef4444" strokeWidth="1" />
-                  <rect x="355" y="122" width="10" height="20" fill="#ef4444" />
-                  {/* Candle 10 - Green */}
-                  <line x1="400" y1="105" x2="400" y2="145" stroke="#10B981" strokeWidth="1" />
-                  <rect x="395" y="110" width="10" height="28" fill="#10B981" />
-                  {/* Candle 11 - Green */}
-                  <line x1="440" y1="92" x2="440" y2="128" stroke="#10B981" strokeWidth="1" />
-                  <rect x="435" y="96" width="10" height="25" fill="#10B981" />
-                  {/* Candle 12 - Red */}
-                  <line x1="480" y1="85" x2="480" y2="120" stroke="#ef4444" strokeWidth="1" />
-                  <rect x="475" y="90" width="10" height="22" fill="#ef4444" />
-                  {/* Candle 13 - Green */}
-                  <line x1="520" y1="75" x2="520" y2="112" stroke="#10B981" strokeWidth="1" />
-                  <rect x="515" y="80" width="10" height="25" fill="#10B981" />
-                  {/* Candle 14 - Green - Entry candle */}
-                  <line x1="560" y1="62" x2="560" y2="98" stroke="#10B981" strokeWidth="1" />
-                  <rect x="555" y="65" width="10" height="28" fill="#10B981" />
-                  {/* Candle 15 - Green */}
-                  <line x1="600" y1="55" x2="600" y2="88" stroke="#10B981" strokeWidth="1" />
-                  <rect x="595" y="58" width="10" height="25" fill="#10B981" />
-                  {/* Candle 16 - Red */}
-                  <line x1="640" y1="48" x2="640" y2="80" stroke="#ef4444" strokeWidth="1" />
-                  <rect x="635" y="52" width="10" height="20" fill="#ef4444" />
-                  {/* Candle 17 - Green */}
-                  <line x1="680" y1="42" x2="680" y2="72" stroke="#10B981" strokeWidth="1" />
-                  <rect x="675" y="45" width="10" height="22" fill="#10B981" />
-                  {/* Candle 18 - Current - Green */}
-                  <line x1="720" y1="35" x2="720" y2="65" stroke="#10B981" strokeWidth="1" />
-                  <rect x="715" y="38" width="10" height="22" fill="#10B981" />
-
-                  {/* Volume Histogram at bottom */}
-                  <g transform="translate(0, 285)">
-                    <rect x="35" y="0" width="10" height="25" fill="url(#volRed)" />
-                    <rect x="75" y="0" width="10" height="35" fill="url(#volGreen)" />
-                    <rect x="115" y="0" width="10" height="20" fill="url(#volRed)" />
-                    <rect x="155" y="0" width="10" height="42" fill="url(#volGreen)" />
-                    <rect x="195" y="0" width="10" height="38" fill="url(#volGreen)" />
-                    <rect x="235" y="0" width="10" height="15" fill="url(#volRed)" />
-                    <rect x="275" y="0" width="10" height="32" fill="url(#volGreen)" />
-                    <rect x="315" y="0" width="10" height="48" fill="url(#volGreen)" />
-                    <rect x="355" y="0" width="10" height="18" fill="url(#volRed)" />
-                    <rect x="395" y="0" width="10" height="55" fill="url(#volGreen)" />
-                    <rect x="435" y="0" width="10" height="45" fill="url(#volGreen)" />
-                    <rect x="475" y="0" width="10" height="22" fill="url(#volRed)" />
-                    <rect x="515" y="0" width="10" height="50" fill="url(#volGreen)" />
-                    <rect x="555" y="0" width="10" height="60" fill="url(#volGreen)" />
-                    <rect x="595" y="0" width="10" height="42" fill="url(#volGreen)" />
-                    <rect x="635" y="0" width="10" height="28" fill="url(#volRed)" />
-                    <rect x="675" y="0" width="10" height="38" fill="url(#volGreen)" />
-                    <rect x="715" y="0" width="10" height="52" fill="url(#volGreen)" />
-                  </g>
-
-                  {/* Current Price Crosshair */}
-                  <line x1="0" y1="45" x2="800" y2="45" stroke="#10B981" strokeWidth="1" strokeDasharray="2,2" opacity="0.6" />
-                  <line x1="720" y1="0" x2="720" y2="280" stroke="#10B981" strokeWidth="1" strokeDasharray="2,2" opacity="0.3" />
-
-                  {/* Price labels on Y-axis */}
-                  <g fontFamily="Roboto Mono, monospace" fontSize="8" fill="#666">
-                    <text x="755" y="50" textAnchor="start">73,200.00</text>
-                    <text x="755" y="95" textAnchor="start">72,800.00</text>
-                    <text x="755" y="140" textAnchor="start">72,400.00</text>
-                    <text x="755" y="185" textAnchor="start">72,000.00</text>
-                    <text x="755" y="230" textAnchor="start">71,600.00</text>
-                  </g>
-
-                  {/* Entry point marker */}
-                  <circle cx="560" cy="65" r="4" fill="#10B981" />
-                  <circle cx="560" cy="65" r="8" fill="#10B981" opacity="0.3">
-                    <animate attributeName="r" values="8;14;8" dur="2s" repeatCount="indefinite" />
-                    <animate attributeName="opacity" values="0.3;0;0.3" dur="2s" repeatCount="indefinite" />
-                  </circle>
-                </svg>
-
-                {/* Entry Annotation */}
-                <div className="absolute bottom-24 right-32">
-                  <div className="px-2 py-1 rounded-sm bg-emerald-500/20 border border-emerald-500/30 text-[10px] font-mono text-emerald-400">
-                    ENTRY @ 71,820.00
-                  </div>
-                </div>
-              </div>
-
-              {/* Active Position Bar */}
-              <div className="px-4 py-3 border-t border-[#1a1a1a] bg-emerald-500/5">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-4">
-                    <div className="flex items-center gap-2">
-                      <Zap className="w-4 h-4 text-emerald-400" />
-                      <span className="text-[11px] font-mono text-emerald-400 uppercase">Active Position</span>
-                    </div>
-                    <div className="h-4 w-px bg-[#1a1a1a]" />
-                    <span className="px-2 py-0.5 rounded-sm bg-emerald-500/20 text-emerald-400 text-[11px] font-mono font-bold">LONG</span>
-                    <span className="text-[11px] font-mono text-white">0.055 BTC</span>
-                    <span className="text-[11px] font-mono text-white/40">@ 72,450.20</span>
-                    <span className="text-[11px] font-mono text-amber-400">50x</span>
-                  </div>
-                  <div className="flex items-center gap-4">
-                    <div className="text-right">
-                      <div className="text-[9px] font-mono text-white/30">UNREALIZED P&L</div>
-                      <div className="text-sm font-mono text-emerald-400 font-medium">+₦124,500.00</div>
-                    </div>
-                    <div className="text-right">
-                      <div className="text-[9px] font-mono text-white/30">ROE</div>
-                      <div className="text-sm font-mono text-emerald-400 font-medium">+1.72%</div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            {/* CENTER PANEL: Order Book + Market Data */}
-            <div className="hidden lg:flex col-span-2 border-r border-[#1a1a1a] flex-col">
-              <OrderBook />
-              <div className="border-t border-[#1a1a1a]">
-                <MarketStats />
-              </div>
-            </div>
-
-            {/* RIGHT PANEL: Portfolio + Execution Log */}
-            <div className="hidden lg:flex col-span-3 flex-col bg-[#080808]">
-
-              {/* Portfolio Summary */}
-              <div className="px-4 py-4 border-b border-[#1a1a1a]">
-                <div className="flex items-center justify-between mb-3">
-                  <span className="text-[10px] font-mono text-white/40 uppercase tracking-wider">Portfolio</span>
-                  <div className="flex items-center gap-1.5">
-                    <div className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
-                    <span className="text-[9px] font-mono text-emerald-400">SYNCED</span>
-                  </div>
-                </div>
-                <div className="mb-3">
-                  <div className="text-[10px] font-mono text-white/30 mb-1">TOTAL EQUITY</div>
-                  <div className="flex items-baseline gap-1">
-                    <span className="text-2xl font-mono text-white font-medium tabular-nums">₦4,250,000</span>
-                    <span className="text-base font-mono text-white/40 tabular-nums">.42</span>
-                  </div>
-                </div>
-                <div className="grid grid-cols-2 gap-3">
-                  <div className="px-2.5 py-2 rounded-sm bg-[#0d0d0d] border border-[#1a1a1a]">
-                    <div className="text-[9px] font-mono text-white/30">TODAY P&L</div>
-                    <div className="text-[13px] font-mono text-emerald-400">+₦124,500</div>
-                    <div className="text-[9px] font-mono text-emerald-400/60">+2.93%</div>
-                  </div>
-                  <div className="px-2.5 py-2 rounded-sm bg-[#0d0d0d] border border-[#1a1a1a]">
-                    <div className="text-[9px] font-mono text-white/30">AVAILABLE</div>
-                    <div className="text-[13px] font-mono text-white">₦3,820,000</div>
-                    <div className="text-[9px] font-mono text-white/30">89.8%</div>
-                  </div>
-                </div>
-              </div>
-
-              {/* Session Stats */}
-              <div className="px-4 py-3 border-b border-[#1a1a1a] grid grid-cols-3 gap-2">
-                <div className="text-center">
-                  <div className="text-lg font-mono text-white tabular-nums">127</div>
-                  <div className="text-[9px] font-mono text-white/30">TRADES</div>
-                </div>
-                <div className="text-center">
-                  <div className="text-lg font-mono text-emerald-400 tabular-nums">68%</div>
-                  <div className="text-[9px] font-mono text-white/30">WIN RATE</div>
-                </div>
-                <div className="text-center">
-                  <div className="text-lg font-mono text-white tabular-nums">2.4x</div>
-                  <div className="text-[9px] font-mono text-white/30">P/L RATIO</div>
-                </div>
-              </div>
-
-              {/* Execution Log */}
-              <div className="flex-1 flex flex-col overflow-hidden">
-                <div className="px-4 py-2 border-b border-[#1a1a1a] flex items-center justify-between bg-[#0d0d0d]">
-                  <div className="flex items-center gap-2">
-                    <Terminal className="w-3 h-3 text-cyan-400" />
-                    <span className="text-[10px] font-mono text-white/40 uppercase">Execution Log</span>
-                  </div>
-                  <span className="text-[9px] font-mono text-amber-400">{latency}ms</span>
-                </div>
-                <div className="flex-1 overflow-y-auto scrollbar-thin scrollbar-thumb-[#1a1a1a] scrollbar-track-transparent">
-                  {executionLog.map((log, i) => (
-                    <motion.div
-                      key={i}
-                      className="px-3 py-2 border-b border-[#0f0f0f] hover:bg-white/[0.02] group"
-                      initial={{ opacity: 0, x: -10 }}
-                      whileInView={{ opacity: 1, x: 0 }}
-                      viewport={{ once: true }}
-                      transition={{ delay: i * 0.05 }}
-                    >
-                      <div className="flex items-center justify-between mb-0.5">
-                        <span className="text-[10px] font-mono text-cyan-400">{log.event}</span>
-                        <span className={`text-[9px] font-mono ${log.status === 'FILLED' ? 'text-emerald-400' :
-                          log.status === 'SENT' ? 'text-amber-400' : 'text-white/30'
-                          }`}>{log.status}</span>
-                      </div>
-                      <div className="flex items-center justify-between">
-                        <span className="text-[9px] font-mono text-white/40 truncate max-w-[180px]">{log.detail}</span>
-                        <span className="text-[9px] font-mono text-white/20">{log.time}</span>
-                      </div>
-                    </motion.div>
-                  ))}
-                </div>
-              </div>
-
-              {/* Connection Status Footer */}
-              <div className="px-4 py-2 border-t border-[#1a1a1a] bg-[#0d0d0d] flex items-center justify-between">
-                <div className="flex items-center gap-2">
-                  <Server className="w-3 h-3 text-white/30" />
-                  <span className="text-[9px] font-mono text-white/30">SG1.JARS.TRADE</span>
-                </div>
-                <div className="flex items-center gap-3">
-                  <div className="flex items-center gap-1">
-                    <div className="w-1 h-1 rounded-full bg-emerald-500" />
-                    <span className="text-[9px] font-mono text-white/30">WSS</span>
-                  </div>
-                  <div className="flex items-center gap-1">
-                    <div className="w-1 h-1 rounded-full bg-emerald-500" />
-                    <span className="text-[9px] font-mono text-white/30">API</span>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </motion.div>
-
-        {/* Bottom Metrics Bar */}
-        <motion.div
-          className="mt-6 grid grid-cols-2 lg:grid-cols-4 gap-2"
-          initial={{ opacity: 0, y: 20 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
-          transition={{ delay: 0.4 }}
-        >
-          {[
-            { label: "BETA SIGNUPS", value: "2,400+", sublabel: "Growing daily" },
-            { label: "LATENCY", value: "<50ms", sublabel: "Signal → Execution" },
-            { label: "EXCHANGES", value: "2", sublabel: "Binance • Bybit" },
-            { label: "FILL RATE", value: "99.9%", sublabel: "Order precision" },
-          ].map((stat, i) => (
-            <div key={i} className="p-4 rounded-sm bg-[#0a0a0a] border border-[#1a1a1a]">
-              <div className="text-xl lg:text-2xl font-mono text-white tabular-nums">{stat.value}</div>
-              <div className="text-[10px] font-mono text-white/40 mt-1">{stat.label}</div>
-              <div className="text-[9px] font-mono text-white/20">{stat.sublabel}</div>
-            </div>
-          ))}
-        </motion.div>
-      </div>
-    </div>
-  );
-}
-
-
-function DashboardPreviewContent() {
-  const [latency] = useState(44);
-
-  const executionLog = [
-    { event: "WS_CONNECT", detail: "binance-futures-stream", time: "00:00:00.001", status: "OK" },
-    { event: "SIGNAL_RX", detail: "AlphaTrader_01 → LONG BTC", time: "10:42:05.002", status: "OK" },
-    { event: "RISK_CHK", detail: "Position limit: PASS | Margin: PASS", time: "10:42:05.005", status: "OK" },
-    { event: "SIZE_CALC", detail: "2.93% alloc → 0.055 BTC", time: "10:42:05.008", status: "OK" },
-    { event: "ORD_SUBMIT", detail: "MARKET BUY 0.055 BTC @ MKT", time: "10:42:05.012", status: "SENT" },
-    { event: "ORD_ACK", detail: "Binance orderId: 847291034", time: "10:42:05.018", status: "OK" },
-    { event: "FILL", detail: "0.055 BTC @ 72,450.20 USDT", time: "10:42:05.046", status: "FILLED" },
-    { event: "PNL_INIT", detail: "Entry logged | SL: 71,280 | TP: 74,620", time: "10:42:05.048", status: "OK" },
-  ];
-
-  return (
-    <div className="w-full h-full overflow-hidden flex flex-col bg-[#0a0a0a]">
-      {/* Terminal Top Bar */}
-      <div className="h-9 border-b border-[#1a1a1a] flex items-center justify-between px-3 bg-[#0d0d0d] flex-shrink-0">
-        <div className="flex items-center gap-3">
-          <div className="flex items-center gap-1.5">
-            <div className="w-2.5 h-2.5 rounded-full bg-red-500/80" />
-            <div className="w-2.5 h-2.5 rounded-full bg-amber-500/80" />
-            <div className="w-2.5 h-2.5 rounded-full bg-emerald-500/80" />
-          </div>
-          <div className="h-4 w-px bg-[#1a1a1a]" />
-          <div className="flex items-center gap-2">
-            <span className="text-[10px] font-mono text-white/30">JARS</span>
-            <span className="text-[10px] font-mono text-cyan-400">TERMINAL</span>
-            <span className="text-[10px] font-mono text-white/20">v2.4.0</span>
-          </div>
-        </div>
-        <div className="flex items-center gap-4">
-          <div className="flex items-center gap-2">
-            <Activity className="w-3 h-3 text-emerald-400" />
-            <span className="text-[10px] font-mono text-emerald-400">LIVE</span>
-          </div>
-          <LiveClock />
-        </div>
-      </div>
-
-      {/* Ticker Tape */}
-      <TickerTape />
-
-      {/* Main Terminal Grid - Bloomberg-style Bento */}
-      <div className="flex-1 grid grid-cols-1 lg:grid-cols-12 overflow-hidden bg-[#0a0a0a]">
-
-        {/* LEFT PANEL: Main Chart + Position */}
-        <div className="col-span-1 lg:col-span-7 border-r border-[#1a1a1a] flex flex-col">
-
-          {/* Instrument Header */}
-          <div className="px-4 py-3 border-b border-[#1a1a1a] flex items-center justify-between bg-[#0d0d0d]">
-            <div className="flex items-center gap-4">
-              <div className="flex items-center gap-2">
-                <div className="w-6 h-6 rounded bg-amber-500/20 flex items-center justify-center">
-                  <img src={CRYPTO_LOGOS[0].src} alt="BTC" className="w-4 h-4" />
-                </div>
-                <div>
-                  <div className="text-sm font-mono text-white font-medium">BTC/USDT</div>
-                  <div className="text-[9px] font-mono text-white/30">PERPETUAL</div>
-                </div>
-              </div>
-              <div className="h-6 w-px bg-[#1a1a1a]" />
-              <div className="flex items-center gap-3">
-                {["1m", "5m", "15m", "1H", "4H", "1D"].map((tf, i) => (
-                  <button
-                    key={tf}
-                    className={`text-[10px] font-mono px-2 py-1 rounded ${i === 2 ? 'bg-white/10 text-white' : 'text-white/30 hover:text-white/60'}`}
-                  >
-                    {tf}
-                  </button>
-                ))}
-              </div>
-            </div>
-            <div className="flex items-center gap-3">
-              <span className="text-[10px] font-mono text-white/30">AlphaTrader_01</span>
-              <div className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
-            </div>
-          </div>
-
-          {/* Price Display + Chart */}
-          <div className="flex-1 relative min-h-[200px]">
-            {/* Large Price Display */}
-            <div className="absolute top-4 left-4 z-10">
-              <div className="text-[11px] font-mono text-white/30 mb-1">LAST PRICE</div>
-              <div className="flex items-baseline gap-1">
-                <span className="text-3xl font-mono text-white font-medium tabular-nums">72,450</span>
-                <span className="text-lg font-mono text-white/40 tabular-nums">.20</span>
-              </div>
-              <div className="flex items-center gap-2 mt-1">
-                <span className="px-1.5 py-0.5 rounded-sm bg-emerald-500/20 text-emerald-400 text-[11px] font-mono font-medium">+2.34%</span>
-                <span className="text-[10px] font-mono text-white/30">24H</span>
-              </div>
-            </div>
-
-            {/* Mini Stats Row - Hidden on mobile */}
-            <div className="absolute top-3 right-3 z-20 hidden sm:flex items-center gap-6 px-3 py-2 rounded-md bg-[#0a0a0a]/90 backdrop-blur-sm border border-white/5" style={{ whiteSpace: 'nowrap' }}>
-              <div className="text-right">
-                <div className="text-[9px] font-mono text-white/40 whitespace-nowrap">HIGH</div>
-                <div className="text-[11px] font-mono text-emerald-400 whitespace-nowrap">73,120.00</div>
-              </div>
-              <div className="text-right">
-                <div className="text-[9px] font-mono text-white/40 whitespace-nowrap">LOW</div>
-                <div className="text-[11px] font-mono text-red-400 whitespace-nowrap">71,240.50</div>
-              </div>
-              <div className="text-right">
-                <div className="text-[9px] font-mono text-white/40 whitespace-nowrap">VOL</div>
-                <div className="text-[11px] font-mono text-white/60 whitespace-nowrap">$2.84B</div>
-              </div>
-            </div>
-
-            {/* Chart SVG - Professional Candlestick Chart */}
-            <svg className="absolute inset-0 w-full h-full" viewBox="0 0 800 250" preserveAspectRatio="none">
-              <defs>
-                <linearGradient id="bollingerFillScroll" x1="0%" y1="0%" x2="0%" y2="100%">
-                  <stop offset="0%" stopColor="#6366f1" stopOpacity="0.08" />
-                  <stop offset="100%" stopColor="#6366f1" stopOpacity="0.02" />
-                </linearGradient>
-                <linearGradient id="volGreenScroll" x1="0%" y1="100%" x2="0%" y2="0%">
-                  <stop offset="0%" stopColor="#10B981" stopOpacity="0.8" />
-                  <stop offset="100%" stopColor="#10B981" stopOpacity="0.3" />
-                </linearGradient>
-                <linearGradient id="volRedScroll" x1="0%" y1="100%" x2="0%" y2="0%">
-                  <stop offset="0%" stopColor="#ef4444" stopOpacity="0.8" />
-                  <stop offset="100%" stopColor="#ef4444" stopOpacity="0.3" />
-                </linearGradient>
-              </defs>
-
-              {/* Background Grid - 5% opacity */}
-              <g opacity="0.05">
-                {[0, 1, 2, 3, 4, 5, 6].map((i) => (
-                  <line key={`h${i}`} x1="0" y1={30 + i * 30} x2="800" y2={30 + i * 30} stroke="#fff" strokeWidth="1" />
-                ))}
-                {[0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15].map((i) => (
-                  <line key={`v${i}`} x1={50 * i} y1="0" x2={50 * i} y2="210" stroke="#fff" strokeWidth="1" />
-                ))}
-              </g>
-
-              {/* Support Zone */}
-              <rect x="0" y="150" width="800" height="25" fill="#10B981" opacity="0.06" />
-              <line x1="0" y1="162" x2="800" y2="162" stroke="#10B981" strokeWidth="1" strokeDasharray="3,3" opacity="0.3" />
-
-              {/* Resistance Zone */}
-              <rect x="0" y="40" width="800" height="20" fill="#ef4444" opacity="0.06" />
-              <line x1="0" y1="50" x2="800" y2="50" stroke="#ef4444" strokeWidth="1" strokeDasharray="3,3" opacity="0.3" />
-
-              {/* Bollinger Bands */}
-              <path d="M0,130 Q100,145 200,125 T400,90 T600,50 T800,30" fill="none" stroke="#6366f1" strokeWidth="0.5" opacity="0.4" />
-              <path d="M0,175 Q100,185 200,165 T400,135 T600,85 T800,60" fill="none" stroke="#6366f1" strokeWidth="0.5" opacity="0.4" />
-              <path d="M0,175 Q100,185 200,165 T400,135 T600,85 T800,60 L800,30 Q600,50 400,90 T200,125 T0,130 Z" fill="url(#bollingerFillScroll)" />
-
-              {/* 200-day Moving Average */}
-              <path d="M0,155 Q100,150 200,140 T400,110 T600,65 T800,45" fill="none" stroke="#f59e0b" strokeWidth="1.5" opacity="0.7" />
-
-              {/* Candlesticks */}
-              <line x1="40" y1="145" x2="40" y2="170" stroke="#ef4444" strokeWidth="1" />
-              <rect x="36" y="150" width="8" height="12" fill="#ef4444" />
-
-              <line x1="80" y1="138" x2="80" y2="165" stroke="#10B981" strokeWidth="1" />
-              <rect x="76" y="142" width="8" height="15" fill="#10B981" />
-
-              <line x1="120" y1="128" x2="120" y2="158" stroke="#ef4444" strokeWidth="1" />
-              <rect x="116" y="133" width="8" height="17" fill="#ef4444" />
-
-              <line x1="160" y1="118" x2="160" y2="150" stroke="#10B981" strokeWidth="1" />
-              <rect x="156" y="122" width="8" height="20" fill="#10B981" />
-
-              <line x1="200" y1="108" x2="200" y2="140" stroke="#10B981" strokeWidth="1" />
-              <rect x="196" y="112" width="8" height="20" fill="#10B981" />
-
-              <line x1="240" y1="100" x2="240" y2="128" stroke="#ef4444" strokeWidth="1" />
-              <rect x="236" y="104" width="8" height="16" fill="#ef4444" />
-
-              <line x1="280" y1="92" x2="280" y2="122" stroke="#10B981" strokeWidth="1" />
-              <rect x="276" y="96" width="8" height="18" fill="#10B981" />
-
-              <line x1="320" y1="80" x2="320" y2="115" stroke="#10B981" strokeWidth="1" />
-              <rect x="316" y="84" width="8" height="24" fill="#10B981" />
-
-              <line x1="360" y1="72" x2="360" y2="102" stroke="#ef4444" strokeWidth="1" />
-              <rect x="356" y="76" width="8" height="18" fill="#ef4444" />
-
-              <line x1="400" y1="62" x2="400" y2="98" stroke="#10B981" strokeWidth="1" />
-              <rect x="396" y="66" width="8" height="25" fill="#10B981" />
-
-              <line x1="440" y1="52" x2="440" y2="85" stroke="#10B981" strokeWidth="1" />
-              <rect x="436" y="55" width="8" height="23" fill="#10B981" />
-
-              <line x1="480" y1="45" x2="480" y2="78" stroke="#ef4444" strokeWidth="1" />
-              <rect x="476" y="50" width="8" height="20" fill="#ef4444" />
-
-              <line x1="520" y1="38" x2="520" y2="72" stroke="#10B981" strokeWidth="1" />
-              <rect x="516" y="42" width="8" height="23" fill="#10B981" />
-
-              {/* Entry candle */}
-              <line x1="560" y1="28" x2="560" y2="60" stroke="#10B981" strokeWidth="1" />
-              <rect x="556" y="32" width="8" height="22" fill="#10B981" />
-
-              <line x1="600" y1="22" x2="600" y2="52" stroke="#10B981" strokeWidth="1" />
-              <rect x="596" y="25" width="8" height="20" fill="#10B981" />
-
-              <line x1="640" y1="18" x2="640" y2="48" stroke="#ef4444" strokeWidth="1" />
-              <rect x="636" y="22" width="8" height="18" fill="#ef4444" />
-
-              <line x1="680" y1="14" x2="680" y2="42" stroke="#10B981" strokeWidth="1" />
-              <rect x="676" y="17" width="8" height="20" fill="#10B981" />
-
-              {/* Current candle */}
-              <line x1="720" y1="10" x2="720" y2="38" stroke="#10B981" strokeWidth="1" />
-              <rect x="716" y="13" width="8" height="20" fill="#10B981" />
-
-
-
-              {/* Current Price Crosshair */}
-              <line x1="0" y1="18" x2="800" y2="18" stroke="#10B981" strokeWidth="1" strokeDasharray="2,2" opacity="0.6" />
-              <line x1="720" y1="0" x2="720" y2="210" stroke="#10B981" strokeWidth="1" strokeDasharray="2,2" opacity="0.3" />
-
-              {/* Price labels on Y-axis */}
-              <g fontFamily="Roboto Mono, monospace" fontSize="7" fill="#666">
-                <text x="760" y="22" textAnchor="start">73,200.00</text>
-                <text x="760" y="62" textAnchor="start">72,800.00</text>
-                <text x="760" y="102" textAnchor="start">72,400.00</text>
-                <text x="760" y="142" textAnchor="start">72,000.00</text>
-                <text x="760" y="182" textAnchor="start">71,600.00</text>
-              </g>
-
-              {/* Entry point marker */}
-              <circle cx="560" cy="32" r="4" fill="#10B981" />
-              <circle cx="560" cy="32" r="8" fill="#10B981" opacity="0.3">
-                <animate attributeName="r" values="8;14;8" dur="2s" repeatCount="indefinite" />
-                <animate attributeName="opacity" values="0.3;0;0.3" dur="2s" repeatCount="indefinite" />
-              </circle>
-            </svg>
-          </div>
-
-          {/* Active Position Bar */}
-          <div className="px-4 py-2 border-t border-[#1a1a1a] bg-emerald-500/5">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-3">
-                <div className="flex items-center gap-2">
-                  <Zap className="w-3 h-3 text-emerald-400" />
-                  <span className="text-[10px] font-mono text-emerald-400 uppercase">Active Position</span>
-                </div>
-                <span className="px-1.5 py-0.5 rounded-sm bg-emerald-500/20 text-emerald-400 text-[10px] font-mono font-bold">LONG</span>
-                <span className="text-[10px] font-mono text-white">0.055 BTC</span>
-                <span className="text-[10px] font-mono text-amber-400">50x</span>
-              </div>
-              <div className="flex items-center gap-3">
-                <div className="text-right">
-                  <div className="text-[9px] font-mono text-white/30">P&L</div>
-                  <div className="text-[11px] font-mono text-emerald-400">+₦124,500</div>
-                </div>
-                <div className="text-right">
-                  <div className="text-[9px] font-mono text-white/30">ROE</div>
-                  <div className="text-[11px] font-mono text-emerald-400">+1.72%</div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        {/* CENTER PANEL: Order Book + Market Data - Hidden on mobile */}
-        <div className="hidden lg:flex col-span-2 border-r border-[#1a1a1a] flex-col">
-          <OrderBook />
-          <div className="border-t border-[#1a1a1a]">
-            <MarketStats />
-          </div>
-        </div>
-
-        {/* RIGHT PANEL: Portfolio + Execution Log - Hidden on mobile */}
-        <div className="hidden lg:flex col-span-3 flex-col bg-[#080808]">
-
-          {/* Portfolio Summary */}
-          <div className="px-3 py-3 border-b border-[#1a1a1a]">
-            <div className="flex items-center justify-between mb-2">
-              <span className="text-[9px] font-mono text-white/40 uppercase tracking-wider">Portfolio</span>
-              <div className="flex items-center gap-1.5">
-                <div className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
-                <span className="text-[8px] font-mono text-emerald-400">SYNCED</span>
-              </div>
-            </div>
-            <div className="mb-2">
-              <div className="text-[9px] font-mono text-white/30 mb-0.5">TOTAL EQUITY</div>
-              <div className="flex items-baseline gap-1">
-                <span className="text-xl font-mono text-white font-medium tabular-nums">₦4,250,000</span>
-                <span className="text-sm font-mono text-white/40 tabular-nums">.42</span>
-              </div>
-            </div>
-            <div className="grid grid-cols-2 gap-2">
-              <div className="px-2 py-1.5 rounded-sm bg-[#0d0d0d] border border-[#1a1a1a]">
-                <div className="text-[8px] font-mono text-white/30">TODAY P&L</div>
-                <div className="text-[11px] font-mono text-emerald-400">+₦124,500</div>
-              </div>
-              <div className="px-2 py-1.5 rounded-sm bg-[#0d0d0d] border border-[#1a1a1a]">
-                <div className="text-[8px] font-mono text-white/30">AVAILABLE</div>
-                <div className="text-[11px] font-mono text-white">₦3,820,000</div>
-              </div>
-            </div>
-          </div>
-
-          {/* Session Stats */}
-          <div className="px-3 py-2 border-b border-[#1a1a1a] grid grid-cols-3 gap-1">
-            <div className="text-center">
-              <div className="text-base font-mono text-white tabular-nums">127</div>
-              <div className="text-[8px] font-mono text-white/30">TRADES</div>
-            </div>
-            <div className="text-center">
-              <div className="text-base font-mono text-emerald-400 tabular-nums">68%</div>
-              <div className="text-[8px] font-mono text-white/30">WIN RATE</div>
-            </div>
-            <div className="text-center">
-              <div className="text-base font-mono text-white tabular-nums">2.4x</div>
-              <div className="text-[8px] font-mono text-white/30">P/L RATIO</div>
-            </div>
-          </div>
-
-          {/* Execution Log */}
-          <div className="flex-1 flex flex-col overflow-hidden">
-            <div className="px-3 py-1.5 border-b border-[#1a1a1a] flex items-center justify-between bg-[#0d0d0d]">
-              <div className="flex items-center gap-2">
-                <Terminal className="w-3 h-3 text-cyan-400" />
-                <span className="text-[9px] font-mono text-white/40 uppercase">Execution Log</span>
-              </div>
-              <span className="text-[8px] font-mono text-amber-400">{latency}ms</span>
-            </div>
-            <div className="flex-1 overflow-y-auto">
-              {executionLog.map((log, i) => (
-                <div
-                  key={i}
-                  className="px-2 py-1.5 border-b border-[#0f0f0f] hover:bg-white/[0.02]"
-                >
-                  <div className="flex items-center justify-between mb-0.5">
-                    <span className="text-[9px] font-mono text-cyan-400">{log.event}</span>
-                    <span className={`text-[8px] font-mono ${log.status === 'FILLED' ? 'text-emerald-400' :
-                      log.status === 'SENT' ? 'text-amber-400' : 'text-white/30'
-                      }`}>{log.status}</span>
-                  </div>
-                  <div className="flex items-center justify-between">
-                    <span className="text-[8px] font-mono text-white/40 truncate max-w-[140px]">{log.detail}</span>
-                    <span className="text-[8px] font-mono text-white/20">{log.time}</span>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-
-          {/* Connection Status Footer */}
-          <div className="px-3 py-1.5 border-t border-[#1a1a1a] bg-[#0d0d0d] flex items-center justify-between">
-            <div className="flex items-center gap-2">
-              <Server className="w-3 h-3 text-white/30" />
-              <span className="text-[8px] font-mono text-white/30">SG1.JARS.TRADE</span>
-            </div>
-            <div className="flex items-center gap-2">
-              <div className="flex items-center gap-1">
-                <div className="w-1 h-1 rounded-full bg-emerald-500" />
-                <span className="text-[8px] font-mono text-white/30">WSS</span>
-              </div>
-              <div className="flex items-center gap-1">
-                <div className="w-1 h-1 rounded-full bg-emerald-500" />
-                <span className="text-[8px] font-mono text-white/30">API</span>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-  );
-}
-
-
 // Custom professional SVG icons for fintech trust
 const SignalPulseIcon = ({ className }: { className?: string }) => (
   <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
@@ -1446,7 +402,7 @@ function InfrastructureSection() {
                 3. Instant Execution
               </h3>
               <p className="max-w-[32rem] text-left text-base/6 text-white/40">
-                Orders are placed directly in your exchange account via API. You get the same entry price as the master trader. Non-custodial—your funds never leave your account.
+                Orders are placed directly in your exchange account via API. You get the same entry price as the master trader. Non-custodialâ€”your funds never leave your account.
               </p>
               <div className="flex items-center gap-6 mt-6">
                 <div className="flex items-center gap-2">
@@ -1498,7 +454,7 @@ function LuminousStreamPipeline() {
       description: "Rejects toxic flow. If a Master Trader deviates from risk parameters, the signal is killed instantly.",
       icon: Shield,
       status: "ACTIVE",
-      temp: "42°C",
+      temp: "42Â°C",
       position: "top", // Triangle top
     },
     {
@@ -1508,7 +464,7 @@ function LuminousStreamPipeline() {
       description: "Double-entry immutability. Every satoshi is tracked on an internal SQL ledger before external execution.",
       icon: BarChart3,
       status: "SYNCED",
-      temp: "38°C",
+      temp: "38Â°C",
       position: "left", // Triangle bottom-left
     },
     {
@@ -1518,7 +474,7 @@ function LuminousStreamPipeline() {
       description: "Zero-Knowledge Access. We execute trades without ever holding withdrawal permissions.",
       icon: Eye,
       status: "WATCHING",
-      temp: "35°C",
+      temp: "35Â°C",
       position: "right", // Triangle bottom-right
     },
   ];
@@ -1611,7 +567,7 @@ function LuminousStreamPipeline() {
         {/* Terminal-style system labels */}
         <motion.div className="absolute inset-0 pointer-events-none font-mono text-[9px] text-cyan-500/20" style={{ opacity: circuitOpacity }}>
           <span className="absolute top-[15%] left-[5%]">SYS_READY</span>
-          <span className="absolute top-[25%] right-[8%]">CORE_TEMP: 38°C</span>
+          <span className="absolute top-[25%] right-[8%]">CORE_TEMP: 38Â°C</span>
           <span className="absolute top-[45%] left-[12%]">BUFFER_OK</span>
           <span className="absolute top-[55%] right-[15%]">LATENCY: 12ms</span>
           <span className="absolute top-[75%] left-[8%]">MEM_ALLOC: 2.4GB</span>
@@ -1632,7 +588,7 @@ function LuminousStreamPipeline() {
             viewport={{ once: true }}
             transition={{ delay: 0.1 }}
           >
-            Chase the moon. We’ll guard the rocket.
+            Chase the moon. Weâ€™ll guard the rocket.
           </motion.h2>
           <motion.p
             className="text-lg text-white/40 max-w-2xl mx-auto"
@@ -1641,7 +597,7 @@ function LuminousStreamPipeline() {
             viewport={{ once: true }}
             transition={{ delay: 0.2 }}
           >
-            Crypto is wild but with our triple-layer security, your only job is growing your portfolio. We’ve got the rest covered.
+            Crypto is wild but with our triple-layer security, your only job is growing your portfolio. Weâ€™ve got the rest covered.
           </motion.p>
         </div>
 
@@ -1876,11 +832,11 @@ function TradersSection() {
       verified: true,
       roi: "+127.4%",
       winRate: 68,
-      pnl: "+₦847M",
+      pnl: "+â‚¦847M",
       drawdown: "-12.3%",
       sharpe: 2.34,
       copiers: 847,
-      aum: "₦4.2B",
+      aum: "â‚¦4.2B",
       style: "Trend Following",
       sparkData: [20, 35, 28, 45, 40, 55, 70, 65, 80, 75, 95, 127],
     },
@@ -1891,11 +847,11 @@ function TradersSection() {
       verified: true,
       roi: "+89.2%",
       winRate: 72,
-      pnl: "+₦623M",
+      pnl: "+â‚¦623M",
       drawdown: "-8.7%",
       sharpe: 1.98,
       copiers: 623,
-      aum: "₦2.8B",
+      aum: "â‚¦2.8B",
       style: "Mean Reversion",
       sparkData: [15, 22, 30, 28, 42, 48, 55, 52, 68, 72, 80, 89],
     },
@@ -1906,11 +862,11 @@ function TradersSection() {
       verified: true,
       roi: "+64.8%",
       winRate: 65,
-      pnl: "+₦412M",
+      pnl: "+â‚¦412M",
       drawdown: "-18.5%",
       sharpe: 1.45,
       copiers: 412,
-      aum: "₦1.9B",
+      aum: "â‚¦1.9B",
       style: "On-chain Analytics",
       sparkData: [10, 18, 15, 32, 28, 45, 42, 55, 50, 58, 62, 65],
     },
@@ -1921,11 +877,11 @@ function TradersSection() {
       verified: true,
       roi: "+52.1%",
       winRate: 71,
-      pnl: "+₦298M",
+      pnl: "+â‚¦298M",
       drawdown: "-9.2%",
       sharpe: 1.89,
       copiers: 298,
-      aum: "₦1.2B",
+      aum: "â‚¦1.2B",
       style: "Statistical Arbitrage",
       sparkData: [12, 18, 22, 28, 32, 36, 38, 42, 44, 48, 50, 52],
     },
@@ -2440,7 +1396,7 @@ function FAQSection() {
         >
           <p className="text-white/40 text-sm mb-4">Still have questions?</p>
           <a href="#" className="text-emerald-400 text-sm font-medium hover:text-emerald-300 transition-colors">
-            Contact our support team →
+            Contact our support team â†’
           </a>
         </motion.div>
       </div>
@@ -2484,12 +1440,21 @@ export default function LandingPage() {
             </div>
 
             <div className="flex items-center gap-4">
-              <Link href="/login" className="text-sm text-white/50 hover:text-white transition-colors font-medium">
-                Sign In
-              </Link>
+              <div className="hidden lg:flex items-center gap-4 mr-4 border-r border-white/10 pr-6">
+                <a
+                  href="https://github.com/astrovine/jars"
+                  target="_blank"
+                  rel="noreferrer"
+                  className="flex items-center gap-2 text-sm font-medium text-white/50 hover:text-white transition-colors"
+                >
+                  <Github className="w-4 h-4" />
+                  <span className="hidden xl:inline">Star on GitHub</span>
+                </a>
+              </div>
+
               <Link href="/register">
                 <Button className="bg-white text-black hover:bg-white/90 rounded-full h-9 px-5 text-sm font-semibold shadow-lg">
-                  Get Started
+                  Create Account
                 </Button>
               </Link>
             </div>
@@ -2531,16 +1496,36 @@ export default function LandingPage() {
           </motion.p>
 
           <motion.div
-            className="flex flex-col sm:flex-row items-start gap-6 mb-16"
+            className="flex flex-col sm:flex-row items-center gap-6 mb-16"
             initial={{ opacity: 0, y: 40 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.4 }}
           >
-            <Link href="/register">
-              <Button className="h-16 px-10 bg-white text-black hover:bg-white/90 rounded-2xl text-lg font-semibold">
-                Open free account
-                <ArrowRight className="w-5 h-5 ml-3" />
+            {/* Professional CLI Install Box */}
+            <div className="flex items-center gap-3 p-1.5 pl-4 pr-2 rounded-xl bg-[#1a1a1a] border border-white/10 shadow-xl shadow-black/50 group">
+              <div className="flex items-center gap-3">
+                <span className="text-emerald-500 font-mono select-none">$</span>
+                <span className="font-mono text-white text-sm">pipx install jars-cli</span>
+              </div>
+              <div className="h-6 w-px bg-white/10 mx-1" />
+              <Button
+                variant="ghost"
+                size="icon"
+                className="h-8 w-8 text-white/40 hover:text-white hover:bg-white/10 rounded-lg"
+                onClick={() => {
+                  navigator.clipboard.writeText("pipx install jars-cli");
+                }}
+              >
+                <Copy className="w-3.5 h-3.5" />
               </Button>
+            </div>
+
+            <span className="text-sm text-white/30 hidden sm:inline-block">or</span>
+
+            <Link href="/register">
+              <span className="text-sm font-medium text-white/40 hover:text-white transition-colors border-b border-transparent hover:border-white/40 pb-0.5">
+                View documentation
+              </span>
             </Link>
           </motion.div>
 
@@ -2592,7 +1577,7 @@ export default function LandingPage() {
             </div>
           }
         >
-          <DashboardPreviewContent />
+          <TerminalDemo />
         </ContainerScroll>
       </section>
 
@@ -2643,7 +1628,7 @@ export default function LandingPage() {
             viewport={{ once: true }}
             transition={{ delay: 0.3 }}
           >
-         No credit card required · Non-custodial
+            No credit card required Â· Non-custodial
           </motion.p>
         </div>
       </section>
@@ -2660,7 +1645,7 @@ export default function LandingPage() {
             <div className="flex items-center gap-2 text-sm text-white/40">
               <span>Follow us on</span>
               <div className="flex items-center gap-4 ml-2">
-                <a href="#" className="text-white/60 hover:text-white transition-colors">𝕏</a>
+                <a href="#" className="text-white/60 hover:text-white transition-colors">ð•</a>
                 <a href="#" className="text-white/60 hover:text-white transition-colors">Discord</a>
                 <a href="#" className="text-white/60 hover:text-white transition-colors">Telegram</a>
                 <a href="#" className="text-white/60 hover:text-white transition-colors">GitHub</a>
@@ -2760,7 +1745,7 @@ export default function LandingPage() {
 
           <div className="flex flex-col lg:flex-row items-start lg:items-center justify-between gap-6 text-xs text-white/30">
             <div>
-              <p>Ivy Technologies Ltd. © 2026. All rights reserved.</p>
+              <p>Ivy Technologies Ltd. Â© 2026. All rights reserved.</p>
               <p className="mt-1">Lagos, Nigeria</p>
             </div>
             <div className="flex items-center gap-6">
