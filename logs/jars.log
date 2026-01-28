@@ -12423,3 +12423,11 @@ application.utilities.exceptions.DatabaseError: Database error: Failed to retrie
 2026-01-28 13:12:29 - application.routers.users - INFO - [users.py:28] - User 307a1d48-9f7f-43c4-923b-3808ad967e2a requesting basic profile from 127.0.0.1
 2026-01-28 13:12:41 - application.routers.auth - INFO - [auth.py:418] - Logout all sessions request from user 307a1d48-9f7f-43c4-923b-3808ad967e2a from 127.0.0.1
 2026-01-28 13:12:41 - application.routers.auth - INFO - [auth.py:437] - User 307a1d48-9f7f-43c4-923b-3808ad967e2a logged out from all sessions from 127.0.0.1
+2026-01-28 13:56:35 - application.routers.auth - INFO - [auth.py:148] - [LOGIN] Login attempt | Email: divineuzoukwu3@gmail.com | IP: 127.0.0.1
+2026-01-28 13:56:35 - application.services.auth_service - INFO - [auth_service.py:22] - [AUTH] Login attempt for email: divineuzoukwu3@gmail.com
+2026-01-28 13:56:37 - application.services.auth_service - INFO - [auth_service.py:57] - [AUTH SUCCESS] User 307a1d48-9f7f-43c4-923b-3808ad967e2a (divineuzoukwu3@gmail.com) logged in successfully
+2026-01-28 13:56:37 - application.routers.auth - INFO - [auth.py:187] - [LOGIN SUCCESS] User authenticated | ID: 307a1d48-9f7f-43c4-923b-3808ad967e2a | Email: divineuzoukwu3@gmail.com | IP: 127.0.0.1
+2026-01-28 13:56:37 - application.routers.users - INFO - [users.py:28] - User 307a1d48-9f7f-43c4-923b-3808ad967e2a requesting basic profile from 127.0.0.1
+2026-01-28 13:56:56 - application.routers.users - INFO - [users.py:28] - User 307a1d48-9f7f-43c4-923b-3808ad967e2a requesting basic profile from 127.0.0.1
+2026-01-28 13:57:03 - application.routers.keys - INFO - [keys.py:86] - [KEY] Returned 0 keys for user 307a1d48-9f7f-43c4-923b-3808ad967e2a
+2026-01-28 13:57:34 - application.routers.users - INFO - [users.py:28] - User 307a1d48-9f7f-43c4-923b-3808ad967e2a requesting basic profile from 127.0.0.1

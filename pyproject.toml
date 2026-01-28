@@ -1,0 +1,23 @@
+[tool.poetry]
+name = "jars-cli"
+version = "2.0.1"
+description = "The JARS High-Frequency Trading Controller"
+authors = ["JARS <dev@jars.fi>"]
+readme = "README.md"
+packages = [{include = "jars"}]
+
+[tool.poetry.dependencies]
+python = "^3.10"
+typer = "^0.9.0"
+rich = "^13.0.0"
+requests = "^2.31.0"
+prompt_toolkit = "^3.0.0"
+pyfiglet = "^0.7"
+websockets = "^11.0"
+
+[tool.poetry.scripts]
+jars = "jars.main:app"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
