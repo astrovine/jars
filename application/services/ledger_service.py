@@ -137,8 +137,12 @@ class LedgerService:
             return transaction, Decimal("0")
 
         if transaction.status != TransactionStatus.PENDING:
-            logger.error(f"[INVALID STATE] Cannot process transaction {reference} - current status is {transaction.status.value}")
-            raise es.InvalidTransactionStateError(f"Transaction {reference} is in invalid state: {transaction.status}")
+            # Allow recovery: If marked FAILED but Paystack says SUCCESS, allow it.
+            if transaction.status == TransactionStatus.FAILED:
+                logger.warning(f"[RECOVERY] Transaction {reference} was previously marked FAILED but Paystack verified SUCCESS. Reprocessing...")
+            else:
+                logger.error(f"[INVALID STATE] Cannot process transaction {reference} - current status is {transaction.status.value}")
+                raise es.InvalidTransactionStateError(f"Transaction {reference} is in invalid state: {transaction.status}")
 
         tx_meta = json.loads(transaction.tx_metadata) if transaction.tx_metadata else {}
         user_id = uuid.UUID(tx_meta.get("user_id"))
@@ -358,6 +362,8 @@ class LedgerService:
         limit: int = 50,
         offset: int = 0
     ) -> Tuple[list, int]:
+        from sqlalchemy.orm import selectinload
+        
         wallet = await LedgerService.get_user_wallet(db, user_id)
         if not wallet:
             return [], 0
@@ -372,6 +378,9 @@ class LedgerService:
         entries_result = await db.execute(
             select(LedgerEntry).filter(
                 LedgerEntry.account_id == wallet.id
+            ).options(
+                selectinload(LedgerEntry.transaction),
+                selectinload(LedgerEntry.account)
             ).order_by(LedgerEntry.created_at.desc()).offset(offset).limit(limit)
         )
         entries = entries_result.scalars().all()

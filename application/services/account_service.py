@@ -260,14 +260,21 @@ class AccountService:
     @staticmethod
     async def get_activity_logs(db: AsyncSession, user: account.User) -> Sequence[audit_logs.AuditLog]:
         try:
+            from application.models.trader_profile import TraderProfile
+
+            # Manually query trader profile to avoid lazy load error on user.trader_profile
+            trader_query = select(TraderProfile.id).where(TraderProfile.user_id == user.id)
+            result_tp = await db.execute(trader_query)
+            trader_profile_id = result_tp.scalar_one_or_none()
+
             query = select(audit_logs.AuditLog).where(
                 audit_logs.AuditLog.user_id == user.id
             )
 
-            if user.trader_profile and user.trader_profile.id:
+            if trader_profile_id:
                 query = select(audit_logs.AuditLog).where(
                     (audit_logs.AuditLog.user_id == user.id) |
-                    (audit_logs.AuditLog.trader_profile_id == user.trader_profile.id)
+                    (audit_logs.AuditLog.trader_profile_id == trader_profile_id)
                 )
 
             query = query.order_by(desc(audit_logs.AuditLog.created_at))
